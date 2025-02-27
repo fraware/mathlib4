@@ -731,6 +731,7 @@ import Mathlib.Algebra.Order.Floor.Div
 import Mathlib.Algebra.Order.Floor.Prime
 import Mathlib.Algebra.Order.Group.Abs
 import Mathlib.Algebra.Order.Group.Action
+import Mathlib.Algebra.Order.Group.Action.End
 import Mathlib.Algebra.Order.Group.Action.Synonym
 import Mathlib.Algebra.Order.Group.Basic
 import Mathlib.Algebra.Order.Group.Bounds
@@ -738,6 +739,7 @@ import Mathlib.Algebra.Order.Group.CompleteLattice
 import Mathlib.Algebra.Order.Group.Cone
 import Mathlib.Algebra.Order.Group.Defs
 import Mathlib.Algebra.Order.Group.DenselyOrdered
+import Mathlib.Algebra.Order.Group.End
 import Mathlib.Algebra.Order.Group.Finset
 import Mathlib.Algebra.Order.Group.Indicator
 import Mathlib.Algebra.Order.Group.InjSurj
