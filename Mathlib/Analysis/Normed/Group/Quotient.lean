@@ -255,8 +255,7 @@ variable {M N : Type*} [SeminormedAddCommGroup M] [SeminormedAddCommGroup N]
 
 /-- The definition of the norm on the quotient by an additive subgroup. -/
 @[deprecated QuotientAddGroup.instNorm (since := "2025-02-02")]
-noncomputable def normOnQuotient (S : AddSubgroup M) : Norm (M ⧸ S) where
-  norm x := sInf (norm '' { m | mk' S m = x })
+noncomputable def normOnQuotient (S : AddSubgroup M) : Norm (M ⧸ S) := inferInstance
 
 @[deprecated QuotientAddGroup.norm_eq_infDist (since := "2025-02-02")]
 theorem AddSubgroup.quotient_norm_eq {S : AddSubgroup M} (x : M ⧸ S) :
@@ -272,7 +271,7 @@ theorem image_norm_nonempty {S : AddSubgroup M} (x : M ⧸ S) :
 theorem bddBelow_image_norm (s : Set M) : BddBelow (norm '' s) :=
   ⟨0, forall_mem_image.2 fun _ _ ↦ norm_nonneg _⟩
 
-@[deprecated "No replacement" (since := "2025-02-02")]
+@[deprecated "No replacement. Use constituent lemmas." (since := "2025-02-02")]
 theorem isGLB_quotient_norm {S : AddSubgroup M} (x : M ⧸ S) :
     IsGLB (norm '' { m | mk' S m = x }) (‖x‖) := by
   simp only [norm_eq_infDist, infDist_eq_iInf, ← sInf_image', dist_zero_left]
