@@ -61,7 +61,7 @@ lemma left_mul_prod_Ioi (a : α) : f a * ∏ x ∈ Ioi a, f x = ∏ x ∈ Ici a,
 
 @[to_additive]
 lemma prod_Ioi_mul_left (a : α) : (∏ x ∈ Ioi a, f x) * f a = ∏ x ∈ Ici a, f x := by
-  rw [mul_comm, left_mu²l_prod_Ioi]
+  rw [mul_comm, left_mul_prod_Ioi]
 
 end LocallyFiniteOrderTop
 
