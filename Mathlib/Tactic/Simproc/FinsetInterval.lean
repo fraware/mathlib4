@@ -23,8 +23,8 @@ private lemma Icc_eq_empty_of_lt (hnm : n.blt m) : Icc m n = ∅ := by simpa usi
 private lemma Icc_eq_insert_of_Icc_succ_eq (hmn : m.ble n) (hs : Icc (m + 1) n = s) :
     Icc m n = insert m s := by rw [← hs, Nat.Icc_insert_succ_left (by simpa using hmn)]
 
-private lemma Ico_eq_of_Icc_pred_eq (hn : n ≠ 0) (hs : Icc m (n - 1) = s) : Ico m n = s := by
-  rw [← hs, Icc_sub_one_right_eq_Ico_of_not_isMin (by simpa)]
+private lemma Ico_succ_eq_of_Icc_eq (hs : Icc m n = s) : Ico m (n + 1) = s := by
+  rw [← hs, Ico_add_one_right_eq_Icc]
 
 private lemma Ico_zero (m : ℕ) : Ico m 0 = ∅ := by simp
 
@@ -36,8 +36,9 @@ private lemma Ioo_eq_of_Icc_succ_pred_eq (hs : Icc (m + 1) (n - 1) = s) : Ioo m 
 
 private lemma Iic_eq_of_Icc_zero_eq (hs : Icc 0 n = s) : Iic n = s := hs
 
-private lemma Iio_eq_of_Icc_zero_pred_eq (hn : n ≠ 0) (hs : Icc 0 (n - 1) = s) : Iio n = s :=
-  Ico_eq_of_Icc_pred_eq hn hs
+private lemma Iio_succ_eq_of_Icc_zero_eq (hs : Icc 0 n = s) : Iio (n + 1) = s := by
+  erw [Iio_eq_Ico, Ico_add_one_right_eq_Icc, hs]
+
 
 private lemma Iio_zero : Iio 0 = ∅ := by simp
 
@@ -104,8 +105,10 @@ simproc_decl Ico_nat (Ico _ _) := .ofQ fun u α e ↦ do
       have : $en =Q 0 := ⟨⟩
       return .done <| .mk q(∅) <| .some q(Ico_zero $em)
     | n + 1 =>
+      have en' := mkNatLitQ n
+      have : $en =Q $en' + 1 := ⟨⟩
       let ⟨es, p⟩ ← evalFinsetIccNat m n em q($en - 1)
-      return .done { expr := es, proof? := q(Ico_eq_of_Icc_pred_eq (Nat.succ_ne_zero _) $p) }
+      return .done { expr := es, proof? := q(Ico_succ_eq_of_Icc_eq $p) }
   | _, _, _ => return .continue
 
 /-- Simproc to compute `Finset.Ioc a b` when `a b : ℕ`.
@@ -164,12 +167,16 @@ simproc_decl Iio_nat (Iio _) := .ofQ fun u α e ↦ do
     let some n := en.rawNatLit? | return .continue
     match n with
     | 0 =>
-      have : $en  =Q 0 := ⟨⟩
+      have : $en =Q 0 := ⟨⟩
       return .done <| .mk q(∅) <| .some q(Iio_zero)
     | n + 1 =>
-      let ⟨es, p⟩ ← evalFinsetIccNat 0 n q(0) q($en - 1)
-      return .done { expr := es, proof? := q(Iio_eq_of_Icc_zero_pred_eq (Nat.succ_ne_zero _) $p) }
+      have en' := mkNatLitQ n
+      have : $en =Q $en' + 1 := ⟨⟩
+      let ⟨es, p⟩ ← evalFinsetIccNat 0 n q(0) q($en')
+      return .done  <| .mk es <| some q(Iio_succ_eq_of_Icc_zero_eq $p)
   | _, _, _ => return .continue
+
+attribute [nolint unusedHavesSuffices] Iio_nat Ico_nat
 
 example : Icc 1 0 = ∅ := by simp only [Icc_nat]
 example : Icc 1 1 = {1} := by simp only [Icc_nat]
