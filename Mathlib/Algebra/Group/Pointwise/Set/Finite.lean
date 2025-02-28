@@ -182,4 +182,3 @@ theorem card_pow_eq_card_pow_card_univ [∀ k : ℕ, DecidablePred (· ∈ S ^ k
   rwa [mul_inv_cancel_right]
 
 end Group
-#min_imports

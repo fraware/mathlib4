@@ -55,8 +55,7 @@ pointwise subtraction
 
 -- TODO
 -- assert_not_exists MonoidWithZero
-assert_not_exists Cardinal
-assert_not_exists MulAction
+assert_not_exists MulAction Cardinal
 
 open Function MulOpposite
 
@@ -1404,30 +1403,6 @@ theorem op_smul_finset_smul_eq_smul_smul_finset (a : α) (s : Finset β) (t : Fi
 
 end SMul
 
-section Mul
-
-variable [Mul α] [DecidableEq α] {s t u : Finset α} {a : α}
-
-@[to_additive] lemma smul_finset_subset_mul : a ∈ s → a • t ⊆ s * t := image_subset_image₂_right
-
-@[to_additive]
-theorem op_smul_finset_subset_mul : a ∈ t → op a • s ⊆ s * t :=
-  image_subset_image₂_left
-
-@[to_additive (attr := simp)]
-theorem biUnion_op_smul_finset (s t : Finset α) : (t.biUnion fun a => op a • s) = s * t :=
-  biUnion_image_right
-
-@[to_additive]
-theorem mul_subset_iff_left : s * t ⊆ u ↔ ∀ a ∈ s, a • t ⊆ u :=
-  image₂_subset_iff_left
-
-@[to_additive]
-theorem mul_subset_iff_right : s * t ⊆ u ↔ ∀ b ∈ t, op b • s ⊆ u :=
-  image₂_subset_iff_right
-
-end Mul
-
 section Monoid
 variable [DecidableEq α] [DecidableEq β] [Monoid α] [Monoid β] [FunLike F α β]
 
@@ -1443,17 +1418,6 @@ lemma image_pow [MonoidHomClass F α β] (f : F) (s : Finset α) : ∀ n, (s ^ n
   | n + 1 => image_pow_of_ne_zero n.succ_ne_zero ..
 
 end Monoid
-
-section Semigroup
-
-variable [Semigroup α] [DecidableEq α]
-
-@[to_additive]
-theorem op_smul_finset_mul_eq_mul_smul_finset (a : α) (s : Finset α) (t : Finset α) :
-    op a • s * t = s * a • t :=
-  op_smul_finset_smul_eq_smul_smul_finset _ _ _ fun _ _ _ => mul_assoc _ _ _
-
-end Semigroup
 
 section IsLeftCancelMul
 
@@ -1567,42 +1531,10 @@ variable [Group α] [DecidableEq α] {s t : Finset α}
 
 end Group
 
-open Pointwise
-
 @[to_additive]
 theorem image_smul_comm [DecidableEq β] [DecidableEq γ] [SMul α β] [SMul α γ] (f : β → γ) (a : α)
     (s : Finset β) : (∀ b, f (a • b) = a • f b) → (a • s).image f = a • s.image f :=
   image_comm
-
-@[to_additive]
-theorem image_smul_distrib [DecidableEq α] [DecidableEq β] [Monoid α] [Monoid β] [FunLike F α β]
-    [MonoidHomClass F α β] (f : F) (a : α) (s : Finset α) : (a • s).image f = f a • s.image f :=
-  image_comm <| map_mul _ _
-
-section Group
-
-variable [DecidableEq β] [Group α] [MulAction α β] {s t : Finset β} {a : α} {b : β}
-
-variable [DecidableEq α]
-
-/-- If the right cosets of `s` by elements of `t` are disjoint (but not necessarily distinct!), then
-the size of `s` divides the size of `s * t`. -/
-@[to_additive "If the right cosets of `s` by elements of `t` are disjoint (but not necessarily
-distinct!), then the size of `s` divides the size of `s + t`."]
-theorem card_dvd_card_mul_left {s t : Finset α} :
-    ((fun b => s.image fun a => a * b) '' (t : Set α)).PairwiseDisjoint id →
-      s.card ∣ (s * t).card :=
-  card_dvd_card_image₂_left fun _ _ => mul_left_injective _
-
-/-- If the left cosets of `t` by elements of `s` are disjoint (but not necessarily distinct!), then
-the size of `t` divides the size of `s * t`. -/
-@[to_additive "If the left cosets of `t` by elements of `s` are disjoint (but not necessarily
-distinct!), then the size of `t` divides the size of `s + t`."]
-theorem card_dvd_card_mul_right {s t : Finset α} :
-    ((· • t) '' (s : Set α)).PairwiseDisjoint id → t.card ∣ (s * t).card :=
-  card_dvd_card_image₂_right fun _ _ => mul_right_injective _
-
-end Group
 
 section BigOps
 section CommMonoid
@@ -1641,11 +1573,6 @@ lemma piFinset_div [∀ i, Div (α i)] (s t : ∀ i, Finset (α i)) :
 @[to_additive (attr := simp)]
 lemma piFinset_inv [∀ i, Inv (α i)] (s : ∀ i, Finset (α i)) :
     piFinset (fun i ↦ (s i)⁻¹) = (piFinset s)⁻¹ := piFinset_image _ _
-
-
-
--- Note: We don't currently state `piFinset_vsub` because there's no
--- `[∀ i, VSub (β i) (α i)] → VSub (∀ i, β i) (∀ i, α i)` instance
 
 end Fintype
 
@@ -1737,9 +1664,4 @@ end VSub
 
 end Set
 
-instance Nat.decidablePred_mem_vadd_set {s : Set ℕ} [DecidablePred (· ∈ s)] (a : ℕ) :
-    DecidablePred (· ∈ a +ᵥ s) :=
-  fun n ↦ decidable_of_iff' (a ≤ n ∧ n - a ∈ s) <| by
-    simp only [Set.mem_vadd_set, vadd_eq_add]; aesop
-
-set_option linter.style.longFile 2000
+set_option linter.style.longFile 1800
