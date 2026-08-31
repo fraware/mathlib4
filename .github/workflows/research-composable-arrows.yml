@@ -1,0 +1,24 @@
+name: Composable arrows research
+
+on:
+  push:
+    branches:
+      - research/2026-08-31-composable-arrows-fin
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          use-github-cache: false
+          use-mathlib-cache: false
+      - name: Fetch Mathlib cache
+        run: lake exe cache get
+      - name: Build diagnostic module
+        run: lake build MathlibTest.ComposableArrowsFinReduce
