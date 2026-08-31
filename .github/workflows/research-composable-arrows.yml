@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  diagnostic:
+  candidate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,5 +20,5 @@ jobs:
           use-mathlib-cache: false
       - name: Fetch Mathlib cache
         run: lake exe cache get
-      - name: Build diagnostic module
-        run: lake build MathlibTest.ComposableArrowsFinReduce
+      - name: Build Fin cases candidate
+        run: lake build MathlibTest.ComposableArrowsFinCases
