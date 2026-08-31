@@ -20,5 +20,5 @@ jobs:
           use-mathlib-cache: false
       - name: Fetch Mathlib cache
         run: lake exe cache get
-      - name: Build Fin cases candidate
-        run: lake build MathlibTest.ComposableArrowsFinCases
+      - name: Build value-based object probe
+        run: lake build MathlibTest.ComposableArrowsFinVal
