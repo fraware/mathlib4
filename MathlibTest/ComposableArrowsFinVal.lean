@@ -8,8 +8,9 @@ import Mathlib.CategoryTheory.ComposableArrows.Basic
 /-!
 # Value-based composable-arrow precomposition experiment
 
-Research-only probe for issue #27382. This tests whether dispatching on the underlying natural-number
-value of a `Fin` index preserves the intended object reductions when `Fin.reduceFinMk` is enabled.
+Research-only probe for issue #27382. This tests whether branching through decidable propositions
+on the underlying natural-number value of a `Fin` index preserves the intended object reductions
+when `Fin.reduceFinMk` is enabled.
 -/
 
 attribute [simp] Fin.reduceFinMk
@@ -21,9 +22,7 @@ variable {n : ℕ} (F : ComposableArrows C n)
 
 @[implicit_reducible]
 def obj (X : C) (i : Fin (n + 1 + 1)) : C :=
-  match i.val with
-  | 0 => X
-  | k + 1 => F.obj' k (by omega)
+  if i.val = 0 then X else F.obj' (i.val - 1) (by omega)
 
 variable {X₀ X₁ X₂ X₃ : C} (g : X₁ ⟶ X₂) (h : X₂ ⟶ X₃)
 
