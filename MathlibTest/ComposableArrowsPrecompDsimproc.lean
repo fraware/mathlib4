@@ -18,17 +18,25 @@ namespace CategoryTheory.ComposableArrows.PrecompDsimprocResearch
 
 open Lean
 
+/-- Build a constructor-shaped finite index so recursive definitions can reduce before the
+finite-literal normalizer rewrites it. -/
+private def mkFinCtor (bound value : Nat) : MetaM Expr := do
+  let boundExpr := mkRawNatLit bound
+  let valueExpr := mkRawNatLit value
+  let ltExpr ← Meta.mkAppM ``LT.lt #[valueExpr, boundExpr]
+  let h ← Meta.mkDecideProof ltExpr
+  Meta.mkAppM ``Fin.mk #[valueExpr, h]
+
 /-- Research-only probe for concrete `Precomp.obj` indices. -/
 dsimproc precompObj (Precomp.obj _ _ _) := fun e => do
   let_expr Precomp.obj _C _inst _n F X ei := ← Meta.whnfR e | return .continue
   let some ⟨bound, i⟩ ← Meta.getFinValue? ei | return .continue
   if i.val = 0 then
     return .continue X
-  else if hbound : 1 < bound then
-    have : NeZero (bound - 1) := ⟨Nat.sub_ne_zero_iff_lt.2 hbound⟩
-    let idx := toExpr (Fin.ofNat (bound - 1) (i.val - 1))
+  else if 1 < bound then
+    let idx ← mkFinCtor (bound - 1) (i.val - 1)
     let result ← Meta.mkAppM ``Functor.obj #[F, idx]
-    return .continue result
+    return .continue (← Meta.whnfR result)
   else
     return .continue
 
