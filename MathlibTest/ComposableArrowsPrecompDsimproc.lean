@@ -16,23 +16,21 @@ attribute [simp] Fin.reduceFinMk
 
 namespace CategoryTheory.ComposableArrows.PrecompDsimprocResearch
 
-open Lean Qq
+open Lean
 
-/-- Research-only probe for numeric `Precomp.obj` indices. -/
+/-- Research-only probe for concrete `Precomp.obj` indices. -/
 dsimproc precompObj (Precomp.obj _ _ _) := fun e => do
-  let_expr Precomp.obj _C _inst n F X ei := ← Meta.whnfR e | return .continue
-  let some i := ei.int? | return .continue
-  let n' ← Meta.whnfD n
-  let some nInt := n'.int? | return .continue
-  let nVal := nInt.toNat
-  let wrapped := (i % (nVal + 2)).toNat
-  if wrapped = 0 then
+  let_expr Precomp.obj _C _inst _n F X ei := ← Meta.whnfR e | return .continue
+  let some ⟨bound, i⟩ ← Meta.getFinValue? ei | return .continue
+  if i.val = 0 then
     return .continue X
-  else
-    have : NeZero (nVal + 1) := ⟨Nat.succ_ne_zero _⟩
-    let idx := toExpr (Fin.ofNat (nVal + 1) (wrapped - 1))
+  else if hbound : 1 < bound then
+    have : NeZero (bound - 1) := ⟨Nat.sub_ne_zero_iff_lt.2 hbound⟩
+    let idx := toExpr (Fin.ofNat (bound - 1) (i.val - 1))
     let result ← Meta.mkAppM ``Functor.obj #[F, idx]
     return .continue result
+  else
+    return .continue
 
 variable {C : Type*} [Category* C]
 variable {X₀ X₁ X₂ X₃ : C}
