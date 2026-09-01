@@ -8,8 +8,9 @@ import Mathlib.CategoryTheory.ComposableArrows.Basic
 /-!
 # Composable-arrow precomposition reduction experiment
 
-Research-only probe for issue #27382. It tests whether a value-aware dsimproc can restore
-`Precomp.obj` reduction after `Fin.reduceFinMk` normalizes concrete finite indices.
+Research-only probe for issue #27382. It tests whether value-aware dsimprocs can restore
+`Precomp.obj` and `Precomp.map` reduction after `Fin.reduceFinMk` normalizes concrete finite
+indices.
 -/
 
 attribute [simp] Fin.reduceFinMk
@@ -40,6 +41,22 @@ dsimproc precompObj (Precomp.obj _ _ _) := fun e => do
     return .continue result
   else
     return .continue
+
+/-- Research-only probe for concrete `Precomp.map` indices. It reconstructs constructor-shaped
+indices and lets the existing `Precomp.map` definition select the appropriate branch. -/
+dsimproc precompMap (Precomp.map _ _ _ _ _) := fun e => do
+  let_expr Precomp.map _C _inst _n F _X f i j _hij := ← Meta.whnfR e | return .continue
+  let some ⟨boundI, iVal⟩ ← Meta.getFinValue? i | return .continue
+  let some ⟨boundJ, jVal⟩ ← Meta.getFinValue? j | return .continue
+  unless boundI = boundJ do return .continue
+  unless iVal.val ≤ jVal.val do return .continue
+  let i' ← mkFinCtor boundI iVal.val
+  let j' ← mkFinCtor boundJ jVal.val
+  let leExpr ← Meta.mkAppM ``LE.le #[i', j']
+  let hij ← Meta.mkDecideProof leExpr
+  let result ← Meta.mkAppM ``Precomp.map #[F, f, i', j', hij]
+  let result ← Lean.Meta.withTransparency .all <| Meta.whnf result
+  return .continue result
 
 variable {C : Type*} [Category* C]
 variable {X₀ X₁ X₂ X₃ : C}
