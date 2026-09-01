@@ -8,28 +8,29 @@ import Mathlib.CategoryTheory.ComposableArrows.Basic
 /-!
 # Composable-arrow precomposition reduction experiment
 
-Research-only probe for issue #27382. It tests whether an outer dsimproc can restore
-`Precomp.obj` reduction after `Fin.reduceFinMk` normalizes the index representation.
+Research-only probe for issue #27382. It tests whether a value-aware dsimproc can restore
+`Precomp.obj` reduction after `Fin.reduceFinMk` normalizes concrete finite indices.
 -/
 
 attribute [simp] Fin.reduceFinMk
 
 namespace CategoryTheory.ComposableArrows.PrecompDsimprocResearch
 
-open Lean Meta
+open Lean Qq
 
-/-- Research-only probe: eta-expand the normalized `Fin` scrutinee before reducing `Precomp.obj`. -/
+/-- Research-only probe for numeric `Precomp.obj` indices. -/
 dsimproc precompObj (Precomp.obj _ _ _) := fun e => do
-  let i := e.appArg!
-  let val ← Meta.mkAppM ``Fin.val #[i]
-  let isLt ← Meta.mkAppM ``Fin.isLt #[i]
-  let i' ← Meta.mkAppM ``Fin.mk #[val, isLt]
-  let e' := Expr.app e.appFn! i'
-  let r ← Meta.whnfR e'
-  if r == e then
-    return .continue
+  let_expr Precomp.obj C inst n F X ei := ← Meta.whnfR e | return .continue
+  let some i := ei.int? | return .continue
+  let n' : Q(ℕ) ← Meta.whnfD n
+  let some nVal := n'.nat? | return .continue
+  let wrapped := (i % (nVal + 2)).toNat
+  if wrapped = 0 then
+    return .continue X
   else
-    return .continue r
+    let _ ← synthInstanceQ q(NeZero ($n + 1))
+    have k : Q(ℕ) := mkRawNatLit (wrapped - 1)
+    return .continue q($F.obj (OfNat.ofNat $k : Fin ($n + 1)))
 
 variable {C : Type*} [Category* C]
 variable {X₀ X₁ X₂ X₃ : C}
