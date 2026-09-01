@@ -8,8 +8,8 @@ import Mathlib.CategoryTheory.ComposableArrows.Basic
 /-!
 # Composable-arrow precomposition reduction experiment
 
-Research-only probe for issue #27382. It tests whether an outer dsimproc can force
-`Precomp.obj` to reduce before `Fin.reduceFinMk` normalizes the index representation.
+Research-only probe for issue #27382. It tests whether an outer dsimproc can restore
+`Precomp.obj` reduction after `Fin.reduceFinMk` normalizes the index representation.
 -/
 
 attribute [simp] Fin.reduceFinMk
@@ -18,13 +18,18 @@ namespace CategoryTheory.ComposableArrows.PrecompDsimprocResearch
 
 open Lean Meta
 
-/-- Research-only outer reduction probe for `Precomp.obj`. -/
+/-- Research-only probe: eta-expand the normalized `Fin` scrutinee before reducing `Precomp.obj`. -/
 dsimproc precompObj (Precomp.obj _ _ _) := fun e => do
-  let e' ← Meta.whnfR e
-  if e == e' then
+  let i := e.appArg!
+  let val ← Meta.mkAppM ``Fin.val #[i]
+  let isLt ← Meta.mkAppM ``Fin.isLt #[i]
+  let i' ← Meta.mkAppM ``Fin.mk #[val, isLt]
+  let e' := Expr.app e.appFn! i'
+  let r ← Meta.whnfR e'
+  if r == e then
     return .continue
   else
-    return .continue e'
+    return .continue r
 
 variable {C : Type*} [Category* C]
 variable {X₀ X₁ X₂ X₃ : C}
