@@ -22,15 +22,16 @@ open Lean Qq
 dsimproc precompObj (Precomp.obj _ _ _) := fun e => do
   let_expr Precomp.obj C inst n F X ei := ← Meta.whnfR e | return .continue
   let some i := ei.int? | return .continue
-  let n' : Q(ℕ) ← Meta.whnfD n
+  let n' ← Meta.whnfD n
   let some nVal := n'.nat? | return .continue
   let wrapped := (i % (nVal + 2)).toNat
   if wrapped = 0 then
     return .continue X
   else
-    let _ ← synthInstanceQ q(NeZero ($n + 1))
-    have k : Q(ℕ) := mkRawNatLit (wrapped - 1)
-    return .continue q($F.obj (OfNat.ofNat $k : Fin ($n + 1)))
+    have : NeZero (nVal + 1) := ⟨Nat.succ_ne_zero _⟩
+    let idx := toExpr (Fin.ofNat (nVal + 1) (wrapped - 1))
+    let result ← Meta.mkAppM ``Functor.obj #[F, idx]
+    return .continue result
 
 variable {C : Type*} [Category* C]
 variable {X₀ X₁ X₂ X₃ : C}
