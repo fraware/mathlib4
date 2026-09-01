@@ -20,30 +20,18 @@ open Lean Qq
 
 /-- Research-only probe for numeric `Precomp.obj` indices. -/
 dsimproc precompObj (Precomp.obj _ _ _) := fun e => do
-  logInfo m!"precompObj input: {e}"
-  let r ← Meta.whnfR e
-  logInfo m!"precompObj whnfR: {r}"
-  let_expr Precomp.obj _C _inst n F X ei := r | do
-    logInfo "precompObj: outer pattern did not match"
-    return .continue
-  logInfo m!"precompObj n: {n}; index: {ei}; int?: {ei.int?}"
-  let some i := ei.int? | do
-    logInfo "precompObj: numeric index extraction failed"
-    return .continue
+  let_expr Precomp.obj _C _inst n F X ei := ← Meta.whnfR e | return .continue
+  let some i := ei.int? | return .continue
   let n' ← Meta.whnfD n
-  logInfo m!"precompObj n whnfD: {n'}; nat?: {n'.nat?}"
-  let some nVal := n'.nat? | do
-    logInfo "precompObj: numeric length extraction failed"
-    return .continue
+  let some nInt := n'.int? | return .continue
+  let nVal := nInt.toNat
   let wrapped := (i % (nVal + 2)).toNat
-  logInfo m!"precompObj wrapped index: {wrapped}"
   if wrapped = 0 then
     return .continue X
   else
     have : NeZero (nVal + 1) := ⟨Nat.succ_ne_zero _⟩
     let idx := toExpr (Fin.ofNat (nVal + 1) (wrapped - 1))
     let result ← Meta.mkAppM ``Functor.obj #[F, idx]
-    logInfo m!"precompObj result: {result}"
     return .continue result
 
 variable {C : Type*} [Category* C]
