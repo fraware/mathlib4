@@ -54,4 +54,26 @@ example : ((mk₂ g h).precomp f).obj 1 = X₁ := by dsimp
 example : ((mk₂ g h).precomp f).obj 2 = X₂ := by dsimp
 example : ((mk₂ g h).precomp f).obj 3 = X₃ := by dsimp
 
+section UpstreamContract
+
+variable {X₄ : C} (i : X₃ ⟶ X₄)
+
+example : map' (mk₂ f g) 0 1 = f := by dsimp
+example : map' (mk₂ f g) 1 2 = g := by dsimp
+example : map' (mk₂ f g) 0 2 = f ≫ g := by dsimp
+example : (mk₂ f g).hom = f ≫ g := by dsimp
+example : map' (mk₂ f g) 0 0 = 𝟙 _ := by dsimp
+example : map' (mk₂ f g) 1 1 = 𝟙 _ := by dsimp
+example : map' (mk₂ f g) 2 2 = 𝟙 _ := by dsimp
+
+example : map' (mk₃ f g h) 0 1 = f := by dsimp
+example : map' (mk₃ f g h) 1 2 = g := by dsimp
+example : map' (mk₃ f g h) 2 3 = h := by dsimp
+example : map' (mk₃ f g h) 0 3 = f ≫ g ≫ h := by dsimp
+example : (mk₃ f g h).hom = f ≫ g ≫ h := by dsimp
+example : map' (mk₃ f g h) 0 2 = f ≫ g := by dsimp
+example : map' (mk₃ f g h) 1 3 = g ≫ h := by dsimp
+
+end UpstreamContract
+
 end CategoryTheory.ComposableArrows.PrecompDsimprocResearch
