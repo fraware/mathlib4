@@ -36,7 +36,8 @@ dsimproc precompObj (Precomp.obj _ _ _) := fun e => do
   else if 1 < bound then
     let idx ← mkFinCtor (bound - 1) (i.val - 1)
     let result ← Meta.mkAppM ``Functor.obj #[F, idx]
-    return .continue (← Meta.whnfR result)
+    let result ← withTransparency .all <| Meta.whnf result
+    return .continue result
   else
     return .continue
 
