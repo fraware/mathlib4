@@ -30,13 +30,13 @@ variable {C : Type*} [Category* C]
 variable {X₀ X₁ X₂ X₃ : C}
 variable (f : X₀ ⟶ X₁) (g : X₁ ⟶ X₂) (h : X₂ ⟶ X₃)
 
-example : (mk₁ f).precomp (𝟙 X₀) |>.obj 0 = X₀ := by dsimp
-example : (mk₁ f).precomp (𝟙 X₀) |>.obj 1 = X₀ := by dsimp
-example : (mk₁ f).precomp (𝟙 X₀) |>.obj 2 = X₁ := by dsimp
+example : ((mk₁ f).precomp (𝟙 X₀)).obj 0 = X₀ := by dsimp
+example : ((mk₁ f).precomp (𝟙 X₀)).obj 1 = X₀ := by dsimp
+example : ((mk₁ f).precomp (𝟙 X₀)).obj 2 = X₁ := by dsimp
 
-example : (mk₂ g h).precomp f |>.obj 0 = X₀ := by dsimp
-example : (mk₂ g h).precomp f |>.obj 1 = X₁ := by dsimp
-example : (mk₂ g h).precomp f |>.obj 2 = X₂ := by dsimp
-example : (mk₂ g h).precomp f |>.obj 3 = X₃ := by dsimp
+example : ((mk₂ g h).precomp f).obj 0 = X₀ := by dsimp
+example : ((mk₂ g h).precomp f).obj 1 = X₁ := by dsimp
+example : ((mk₂ g h).precomp f).obj 2 = X₂ := by dsimp
+example : ((mk₂ g h).precomp f).obj 3 = X₃ := by dsimp
 
 end CategoryTheory.ComposableArrows.PrecompDsimprocResearch
