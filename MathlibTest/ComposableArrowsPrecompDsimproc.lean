@@ -28,6 +28,16 @@ private def mkFinCtor (bound value : Nat) : MetaM Expr := do
   let h ← Meta.mkDecideProof ltExpr
   Meta.mkAppM ``Fin.mk #[valueExpr, h]
 
+/-- Recursively perform definitional weak-head reduction on an expression and any new
+subexpressions exposed by that reduction. -/
+private def whnfRec (e : Expr) : MetaM Expr :=
+  Meta.transform e (skipConstInApp := true) (post := fun e => do
+    let e' ← Lean.Meta.withTransparency .all <| Meta.whnf e
+    if e' == e then
+      return .done e
+    else
+      return .visit e')
+
 /-- Research-only probe for concrete `Precomp.obj` indices. -/
 dsimproc precompObj (Precomp.obj _ _ _) := fun e => do
   let_expr Precomp.obj _C _inst _n F X ei := ← Meta.whnfR e | return .continue
@@ -55,8 +65,7 @@ dsimproc precompMap (Precomp.map _ _ _ _ _) := fun e => do
   let leExpr ← Meta.mkAppM ``LE.le #[i', j']
   let hij ← Meta.mkDecideProof leExpr
   let result ← Meta.mkAppM ``Precomp.map #[F, f, i', j', hij]
-  let result ← Lean.Meta.withTransparency .all <| Meta.whnf result
-  return .continue result
+  return .continue (← whnfRec result)
 
 variable {C : Type*} [Category* C]
 variable {X₀ X₁ X₂ X₃ : C}
