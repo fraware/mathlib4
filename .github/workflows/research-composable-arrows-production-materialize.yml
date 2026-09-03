@@ -1,0 +1,113 @@
+name: Composable arrows production materialization
+
+on:
+  push:
+    branches:
+      - research/2026-09-04-composable-arrows-production-materialize
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  production:
+    runs-on: ubuntu-latest
+    env:
+      BASE: 30a58f795ae8c95b8299fe3c9ded1e6498a9e9fe
+      PROD_BRANCH: fix/composable-arrows-fin-reduce
+      PR_TITLE: "fix(CategoryTheory): make ComposableArrows compatible with Fin.reduceFinMk"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          use-github-cache: false
+          use-mathlib-cache: false
+      - name: Generate production patch from validated transformation
+        run: |
+          python3 scripts/research_composable_arrows_toexpr_fin.py
+          git diff --check
+          files=(
+            Mathlib/CategoryTheory/ComposableArrows/Basic.lean
+            Mathlib/CategoryTheory/Abelian/DiagramLemmas/Four.lean
+            Mathlib/Algebra/Homology/ExactSequence.lean
+            Mathlib/Algebra/Homology/HomologySequence.lean
+            Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean
+            Mathlib/CategoryTheory/Sites/SheafCohomology/MayerVietoris.lean
+          )
+          git diff -- "${files[@]}" > /tmp/production.patch
+          test -s /tmp/production.patch
+          printf '%s\n' "${files[@]}" | sort > /tmp/expected-files
+          git diff --name-only -- "${files[@]}" | sort > /tmp/actual-files
+          diff -u /tmp/expected-files /tmp/actual-files
+      - name: Create exact production commit on upstream base
+        run: |
+          git checkout --detach "$BASE"
+          git apply /tmp/production.patch
+          git diff --check
+          expected='Mathlib/Algebra/Homology/ExactSequence.lean
+          Mathlib/Algebra/Homology/HomologySequence.lean
+          Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean
+          Mathlib/CategoryTheory/Abelian/DiagramLemmas/Four.lean
+          Mathlib/CategoryTheory/ComposableArrows/Basic.lean
+          Mathlib/CategoryTheory/Sites/SheafCohomology/MayerVietoris.lean'
+          printf '%s\n' "$expected" | sed 's/^          //' | sort > /tmp/expected-clean-files
+          git diff --name-only | sort > /tmp/actual-clean-files
+          diff -u /tmp/expected-clean-files /tmp/actual-clean-files
+          if git grep -n '27382\|\[-Fin.reduceFinMk\]\|attribute \[-simp\] Fin.reduceFinMk' -- \
+            Mathlib/CategoryTheory/ComposableArrows/Basic.lean \
+            Mathlib/CategoryTheory/Abelian/DiagramLemmas/Four.lean \
+            Mathlib/Algebra/Homology/ExactSequence.lean \
+            Mathlib/Algebra/Homology/HomologySequence.lean \
+            Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean; then
+            echo 'stale composable-arrows workaround remains' >&2
+            exit 1
+          fi
+          if grep -n 'mkFinCtor' Mathlib/CategoryTheory/ComposableArrows/Basic.lean; then
+            echo 'manual Fin constructor helper remains' >&2
+            exit 1
+          fi
+          git config user.name 'Matéo H. Petel'
+          git config user.email '113530345+fraware@users.noreply.github.com'
+          git add \
+            Mathlib/CategoryTheory/ComposableArrows/Basic.lean \
+            Mathlib/CategoryTheory/Abelian/DiagramLemmas/Four.lean \
+            Mathlib/Algebra/Homology/ExactSequence.lean \
+            Mathlib/Algebra/Homology/HomologySequence.lean \
+            Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean \
+            Mathlib/CategoryTheory/Sites/SheafCohomology/MayerVietoris.lean
+          git commit -m "$PR_TITLE"
+          test "$(git rev-parse HEAD^)" = "$BASE"
+          test "$(git rev-list --count "$BASE"..HEAD)" = 1
+          git diff-tree --no-commit-id --name-only -r HEAD | sort > /tmp/commit-files
+          diff -u /tmp/expected-clean-files /tmp/commit-files
+      - name: Fetch Mathlib cache for exact production head
+        run: lake exe cache get
+      - name: Check generated imports and title
+        run: |
+          lake exe mk_all --check
+          lake exe check_title_labels --labels 't-category-theory' "$PR_TITLE"
+      - name: Build CI targets
+        run: lake build Mathlib Archive Counterexamples Wanted
+      - name: Check build output is quiet
+        run: |
+          buildMsgs="$(lake build -q --iofail Mathlib Archive Counterexamples Wanted)"
+          if [ -n "$buildMsgs" ]; then
+            printf '%s\n' "$buildMsgs"
+            exit 1
+          fi
+      - name: Run tests
+        run: lake --iofail test
+      - name: Run Mathlib lint
+        env:
+          LEAN_ABORT_ON_PANIC: "1"
+        run: lake lint -- --trace
+      - name: Run production text style
+        run: lake exe lint-style
+      - name: Verify final commit and push production branch
+        run: |
+          test "$(git rev-parse HEAD^)" = "$BASE"
+          test -z "$(git status --porcelain)"
+          git push origin "HEAD:refs/heads/$PROD_BRANCH"
