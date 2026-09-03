@@ -130,7 +130,7 @@ end SymbolicSmoke
 
 section ExactSequenceConsumer
 
-variable {D : Type*} [Category* D] [HasZeroMorphisms D]
+variable {D : Type*} [Category* D] [Limits.HasZeroMorphisms D]
 
 set_option backward.isDefEq.respectTransparency false in
 example (S : ShortComplex D) : S.toComposableArrows.IsComplex :=
