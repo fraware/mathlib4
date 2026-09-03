@@ -21,9 +21,9 @@ jobs:
           use-mathlib-cache: false
       - name: Fetch Mathlib cache
         run: lake exe cache get
-      - name: Apply integrated production experiment
+      - name: Apply production experiment
         run: |
-          python3 scripts/research_composable_arrows_integrated.py
+          python3 scripts/research_composable_arrows_explicit_iso_laws.py
           git diff --check
           if git grep -n '27382\|\[-Fin.reduceFinMk\]\|attribute \[-simp\] Fin.reduceFinMk' -- \
             Mathlib/CategoryTheory/ComposableArrows/Basic.lean \
@@ -38,10 +38,11 @@ jobs:
             Mathlib/Algebra/Homology/ExactSequence.lean \
             Mathlib/Algebra/Homology/HomologySequence.lean \
             Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean
-      - name: Build integrated candidate and affected consumers
+      - name: Build explicit-law candidate
         run: |
           lake build \
             Mathlib.CategoryTheory.ComposableArrows.Basic \
+            Mathlib.CategoryTheory.Abelian.DiagramLemmas.Four \
             Mathlib.Algebra.Homology.ExactSequence \
             Mathlib.Algebra.Homology.HomologySequence \
             Mathlib.Algebra.Homology.HomotopyCategory.ShortExact \
