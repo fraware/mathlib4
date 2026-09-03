@@ -1,0 +1,25 @@
+name: Composable arrows iso recursion research
+
+on:
+  push:
+    branches:
+      - research/2026-09-03-composable-arrows-iso-recursion
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          use-github-cache: false
+          use-mathlib-cache: false
+      - name: Fetch Mathlib cache
+        run: lake exe cache get
+      - name: Build recursive isomorphism probe
+        run: lake build MathlibTest.ComposableArrowsIsoRecursion
