@@ -1,0 +1,40 @@
+name: Composable arrows Mayer-Vietoris full validation
+
+on:
+  push:
+    branches:
+      - research/2026-09-04-composable-arrows-mayer-vietoris-square
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  full:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          use-github-cache: false
+          use-mathlib-cache: false
+      - name: Fetch Mathlib cache
+        run: lake exe cache get
+      - name: Apply exact candidate
+        run: |
+          python3 scripts/research_composable_arrows_mayer_vietoris_square.py
+          git diff --check
+          if git grep -n '27382\|\[-Fin.reduceFinMk\]\|attribute \[-simp\] Fin.reduceFinMk' -- \
+            Mathlib/CategoryTheory/ComposableArrows/Basic.lean \
+            Mathlib/CategoryTheory/Abelian/DiagramLemmas/Four.lean \
+            Mathlib/Algebra/Homology/ExactSequence.lean \
+            Mathlib/Algebra/Homology/HomologySequence.lean \
+            Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean; then
+            echo 'stale composable-arrows workaround remains' >&2
+            exit 1
+          fi
+      - name: Build full library and regression probe
+        run: |
+          lake build Mathlib
+          lake build MathlibTest.ComposableArrowsIntegratedProbe
