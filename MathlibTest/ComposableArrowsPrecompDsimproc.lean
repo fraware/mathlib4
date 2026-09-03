@@ -3,6 +3,7 @@ Copyright (c) 2026 Mateo Petel. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Mateo Petel
 -/
+import Mathlib.Algebra.Homology.HomotopyCategory.ShortExact
 import Mathlib.CategoryTheory.ComposableArrows.Basic
 
 /-!
@@ -126,5 +127,71 @@ example : Precomp.obj F X a = Precomp.obj F X a := by dsimp
 example : Precomp.map F u a b hab = Precomp.map F u a b hab := by dsimp
 
 end SymbolicSmoke
+
+section ExactSequenceConsumer
+
+variable {D : Type*} [Category* D] [HasZeroMorphisms D]
+
+set_option backward.isDefEq.respectTransparency false in
+example (S : ShortComplex D) : S.toComposableArrows.IsComplex :=
+  ComposableArrows.isComplex₂_mk _ (by simp)
+
+end ExactSequenceConsumer
+
+section HomologySequenceConsumer
+
+open HomologicalComplex
+
+variable {D ι : Type*} [Category* D] [Preadditive D] {c : ComplexShape ι}
+  (K L : HomologicalComplex D c) (a b : ι)
+  [K.HasHomology a] [K.HasHomology b] [L.HasHomology a] [L.HasHomology b]
+
+example : (HomologySequence.composableArrows₃ K a b).map' 2 3 = K.homologyπ b := by dsimp
+
+attribute [local simp] homologyMap_comp cyclesMap_comp opcyclesMap_comp
+
+set_option backward.defeqAttrib.useBackward true in
+noncomputable def homologySequenceFunctorProbe [CategoryWithHomology D] :
+    HomologicalComplex D c ⥤ ComposableArrows D 3 where
+  obj K := HomologySequence.composableArrows₃ K a b
+  map {K L} φ := ComposableArrows.homMk₃ (homologyMap φ a) (opcyclesMap φ a) (cyclesMap φ b)
+    (homologyMap φ b) (by simp) (by simp) (by simp)
+
+end HomologySequenceConsumer
+
+section HomotopyShortExactConsumer
+
+open CategoryTheory Category ComplexShape HomotopyCategory Limits
+  HomologicalComplex.HomologySequence Pretriangulated Preadditive
+open CochainComplex.mappingCone
+
+variable {D : Type*} [Category* D] [Abelian D]
+
+set_option backward.defeqAttrib.useBackward true in
+set_option backward.isDefEq.respectTransparency false in
+example {S : ShortComplex (CochainComplex D ℤ)} (hS : S.ShortExact) (n : ℤ) : True := by
+  let φ : ((homologyFunctor D (up ℤ) 0).homologySequenceComposableArrows₅
+      (triangleh S.f) n _ rfl).δlast ⟶ (composableArrows₅ hS n _ rfl).δlast :=
+    homMk₄ ((homologyFunctorFactors D (up ℤ) _).hom.app _)
+      ((homologyFunctorFactors D (up ℤ) _).hom.app _)
+      ((homologyFunctorFactors D (up ℤ) _).hom.app _ ≫
+        HomologicalComplex.homologyMap (descShortComplex S) n)
+      ((homologyFunctorFactors D (up ℤ) _).hom.app _)
+      ((homologyFunctorFactors D (up ℤ) _).hom.app _)
+      ((homologyFunctorFactors D (up ℤ) _).hom.naturality S.f)
+      (by
+        erw [(homologyFunctorFactors D (up ℤ) n).hom.naturality_assoc]
+        dsimp
+        rw [← HomologicalComplex.homologyMap_comp, inr_descShortComplex])
+      (by
+        dsimp
+        erw [homologySequenceδ_triangleh hS]
+        simp only [Functor.comp_obj, HomologicalComplex.homologyFunctor_obj, Category.assoc,
+          Iso.inv_hom_id_app, Category.comp_id])
+      ((homologyFunctorFactors D (up ℤ) _).hom.naturality S.f)
+  clear φ
+  trivial
+
+end HomotopyShortExactConsumer
 
 end CategoryTheory.ComposableArrows.PrecompReductionResearch
