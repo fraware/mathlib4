@@ -1,0 +1,54 @@
+name: Composable arrows reducer ablation
+
+on:
+  push:
+    branches:
+      - research/2026-09-04-composable-arrows-reducer-ablation
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ablate:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [drop_obj, drop_map]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          use-github-cache: false
+          use-mathlib-cache: false
+      - name: Fetch Mathlib cache
+        run: lake exe cache get
+      - name: Apply candidate and ablate one reducer
+        env:
+          MODE: ${{ matrix.mode }}
+        run: |
+          python3 scripts/research_composable_arrows_explicit_iso_laws.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import os
+
+          path = Path("Mathlib/CategoryTheory/ComposableArrows/Basic.lean")
+          text = path.read_text()
+          mode = os.environ["MODE"]
+          if mode == "drop_obj":
+              start = text.index("dsimproc ↓ reduceObj")
+              end = text.index("dsimproc reduceMap", start)
+              text = text[:start] + text[end:]
+          elif mode == "drop_map":
+              start = text.index("dsimproc reduceMap")
+              end = text.index("\n\n", start)
+              text = text[:start] + text[end + 2:]
+          else:
+              raise SystemExit(f"unknown mode {mode}")
+          path.write_text(text)
+          PY
+          git diff --check
+      - name: Build Basic
+        run: lake build Mathlib.CategoryTheory.ComposableArrows.Basic
