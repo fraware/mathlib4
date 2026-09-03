@@ -1,0 +1,42 @@
+name: Composable arrows canonical Fin preflight
+
+on:
+  push:
+    branches:
+      - research/2026-09-04-composable-arrows-toexpr-preflight
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  structural:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          use-github-cache: false
+          use-mathlib-cache: false
+      - name: Apply exact canonical Fin candidate
+        run: |
+          python3 scripts/research_composable_arrows_toexpr_fin.py
+          git diff --check
+          if git grep -n '27382\|\[-Fin.reduceFinMk\]\|attribute \[-simp\] Fin.reduceFinMk' -- \
+            Mathlib/CategoryTheory/ComposableArrows/Basic.lean \
+            Mathlib/CategoryTheory/Abelian/DiagramLemmas/Four.lean \
+            Mathlib/Algebra/Homology/ExactSequence.lean \
+            Mathlib/Algebra/Homology/HomologySequence.lean \
+            Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean; then
+            echo 'stale composable-arrows workaround remains' >&2
+            exit 1
+          fi
+          if grep -n 'mkFinCtor' Mathlib/CategoryTheory/ComposableArrows/Basic.lean; then
+            echo 'manual Fin constructor helper remains' >&2
+            exit 1
+          fi
+      - name: Check generated import files
+        run: lake exe mk_all --check
+      - name: Check text style
+        run: lake exe lint-style
