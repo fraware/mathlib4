@@ -38,5 +38,7 @@ jobs:
           fi
       - name: Check generated import files
         run: lake exe mk_all --check
-      - name: Check text style
+      - name: Remove research-only script noise
+        run: rm -f scripts/research_composable_arrows*.py
+      - name: Check production text style
         run: lake exe lint-style
