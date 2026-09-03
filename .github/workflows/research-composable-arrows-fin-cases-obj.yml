@@ -1,0 +1,49 @@
+name: Composable arrows Fin.cases object research
+
+on:
+  push:
+    branches:
+      - research/2026-09-04-composable-arrows-fin-cases-obj
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          use-github-cache: false
+          use-mathlib-cache: false
+      - name: Fetch Mathlib cache
+        run: lake exe cache get
+      - name: Apply Fin.cases object candidate
+        run: |
+          python3 scripts/research_composable_arrows_fin_cases_obj.py
+          git diff --check
+          if git grep -n '27382\|\[-Fin.reduceFinMk\]\|attribute \[-simp\] Fin.reduceFinMk' -- \
+            Mathlib/CategoryTheory/ComposableArrows/Basic.lean \
+            Mathlib/CategoryTheory/Abelian/DiagramLemmas/Four.lean \
+            Mathlib/Algebra/Homology/ExactSequence.lean \
+            Mathlib/Algebra/Homology/HomologySequence.lean \
+            Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean; then
+            echo 'stale composable-arrows workaround remains' >&2
+            exit 1
+          fi
+          if git grep -n 'dsimproc ↓ reduceObj' -- Mathlib/CategoryTheory/ComposableArrows/Basic.lean; then
+            echo 'object-side dsimproc still present' >&2
+            exit 1
+          fi
+      - name: Build candidate
+        run: |
+          lake build \
+            Mathlib.CategoryTheory.ComposableArrows.Basic \
+            Mathlib.CategoryTheory.Abelian.DiagramLemmas.Four \
+            Mathlib.Algebra.Homology.ExactSequence \
+            Mathlib.Algebra.Homology.HomologySequence \
+            Mathlib.Algebra.Homology.HomotopyCategory.ShortExact \
+            MathlibTest.ComposableArrowsIntegratedProbe
