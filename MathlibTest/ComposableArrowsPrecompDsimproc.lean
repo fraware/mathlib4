@@ -8,15 +8,14 @@ import Mathlib.CategoryTheory.ComposableArrows.Basic
 /-!
 # Composable-arrow reduction experiment
 
-Research-only probe for issue #27382. It combines ordinary reducibility of `Precomp.obj` and
-`Precomp.map` with a narrowly targeted post-dsimproc for concrete composite `Precomp.map` calls.
+Research-only probe for issue #27382. It makes only `Precomp.obj` ordinarily reducible and uses
+a narrowly targeted post-dsimproc for concrete `Precomp.map` calls.
 -/
 
 attribute [simp] Fin.reduceFinMk
 
 set_option allowUnsafeReducibility true in
 attribute [local reducible] CategoryTheory.ComposableArrows.Precomp.obj
-  CategoryTheory.ComposableArrows.Precomp.map
 
 namespace CategoryTheory.ComposableArrows.PrecompReductionResearch
 
