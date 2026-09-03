@@ -14,7 +14,7 @@ if text.count(marker) != 1:
 
 reducer = r'''open Lean
 
-private def mkFinCtor (bound value : Nat) : MetaM Expr := do
+private meta def mkFinCtor (bound value : Nat) : MetaM Expr := do
   let boundExpr := mkRawNatLit bound
   let valueExpr := mkRawNatLit value
   let ltExpr ← Meta.mkAppM ``LT.lt #[valueExpr, boundExpr]
