@@ -30,7 +30,7 @@ private def mkFinCtor (bound value : Nat) : MetaM Expr := do
   Meta.mkAppM ``Fin.mk #[valueExpr, h]
 
 dsimproc precompMap (Precomp.map _ _ _ _ _) := fun e => do
-  let_expr Precomp.map _C _inst _n F _X f i j _hij := ← Meta.whnfR e | return .continue
+  let_expr Precomp.map _C _inst _n F _X f i j _hij := e | return .continue
   let some ⟨boundI, iVal⟩ ← Meta.getFinValue? i | return .continue
   let some ⟨boundJ, jVal⟩ ← Meta.getFinValue? j | return .continue
   unless boundI = boundJ do return .continue
