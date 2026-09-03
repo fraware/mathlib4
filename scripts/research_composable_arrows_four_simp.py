@@ -5,16 +5,15 @@ runpy.run_path("scripts/research_composable_arrows_explicit_iso_laws.py", run_na
 
 four = Path("Mathlib/CategoryTheory/Abelian/DiagramLemmas/Four.lean")
 text = four.read_text()
-mono_last = "(by\n    change Mono (ψ.app ⟨3, by valid⟩)\n    dsimp [ψ]\n    infer_instance)"
-epi_first = "(by\n    change Epi (ψ.app ⟨0, by valid⟩)\n    dsimp [ψ]\n    infer_instance)"
+mono_last = "(by\n    change Mono (ψ.app ⟨3, by valid⟩)\n    rw [show ψ.app ⟨3, by valid⟩ = 𝟙 _ by simp [ψ]]\n    infer_instance)"
 replacements = [
     (
         "(hR₂.exact 0).exact_toComposableArrows h₀ h₁ (by dsimp [ψ]; infer_instance)",
         f"(hR₂.exact 0).exact_toComposableArrows h₀ h₁ {mono_last}",
     ),
     (
-        "(exact₂_mk _ (by simp) ?_) (by dsimp [ψ]; infer_instance) h₀ h₁",
-        f"(exact₂_mk _ (by simp) ?_) {epi_first} h₀ h₁",
+        "h₀ h₁ (by dsimp [ψ]; infer_instance)",
+        f"h₀ h₁ {mono_last}",
     ),
 ]
 for old, new in replacements:
