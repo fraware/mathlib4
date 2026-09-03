@@ -8,14 +8,11 @@ import Mathlib.CategoryTheory.ComposableArrows.Basic
 /-!
 # Composable-arrow reduction experiment
 
-Research-only probe for issue #27382. It makes only `Precomp.obj` ordinarily reducible and uses
-a narrowly targeted post-dsimproc for concrete `Precomp.map` calls.
+Research-only probe for issue #27382. It keeps the upstream reducibility settings unchanged and
+uses narrow simplification procedures for concrete `Precomp.obj` and `Precomp.map` calls.
 -/
 
 attribute [simp] Fin.reduceFinMk
-
-set_option allowUnsafeReducibility true in
-attribute [local reducible] CategoryTheory.ComposableArrows.Precomp.obj
 
 namespace CategoryTheory.ComposableArrows.PrecompReductionResearch
 
@@ -27,6 +24,19 @@ private def mkFinCtor (bound value : Nat) : MetaM Expr := do
   let ltExpr ← Meta.mkAppM ``LT.lt #[valueExpr, boundExpr]
   let h ← Meta.mkDecideProof ltExpr
   Meta.mkAppM ``Fin.mk #[valueExpr, h]
+
+dsimproc ↓ precompObj (Precomp.obj _ _ _) := fun e => do
+  let_expr Precomp.obj _C _inst _n F X ei := ← Meta.whnfR e | return .continue
+  let some ⟨bound, i⟩ ← Meta.getFinValue? ei | return .continue
+  if i.val = 0 then
+    return .visit X
+  else if 1 < bound then
+    let idx ← mkFinCtor (bound - 1) (i.val - 1)
+    let result ← Meta.mkAppM ``Functor.obj #[F, idx]
+    let result ← Lean.Meta.withTransparency .all <| Meta.whnf result
+    return .visit result
+  else
+    return .continue
 
 dsimproc precompMap (Precomp.map _ _ _ _ _) := fun e => do
   let_expr Precomp.map _C _inst _n F _X f i j _hij := e | return .continue
@@ -47,8 +57,12 @@ dsimproc precompMap (Precomp.map _ _ _ _ _) := fun e => do
     return .visit result
 
 variable {C : Type*} [Category* C]
-variable {X₀ X₁ X₂ X₃ X₄ X₅ : C}
-variable (f : X₀ ⟶ X₁) (g : X₁ ⟶ X₂) (h : X₂ ⟶ X₃) (i : X₃ ⟶ X₄) (j : X₄ ⟶ X₅)
+variable {X₀ X₁ X₂ X₃ X₄ X₅ X₆ X₇ : C}
+variable (f : X₀ ⟶ X₁) (g : X₁ ⟶ X₂) (h : X₂ ⟶ X₃) (i : X₃ ⟶ X₄)
+  (j : X₄ ⟶ X₅) (k : X₅ ⟶ X₆) (l : X₆ ⟶ X₇)
+
+private abbrev mk₆' := (mk₅ g h i j k).precomp f
+private abbrev mk₇' := (mk₆' g h i j k l).precomp f
 
 section ObjectReduction
 
@@ -93,6 +107,24 @@ example : map' (mk₅ f g h i j) 0 5 = f ≫ g ≫ h ≫ i ≫ j := by dsimp
 example : map' (mk₅ f g h i j) 2 5 = h ≫ i ≫ j := by dsimp
 example : map' (mk₅ f g h i j) 4 5 = j := by dsimp
 
+example : map' (mk₆' f g h i j k) 0 6 = f ≫ g ≫ h ≫ i ≫ j ≫ k := by dsimp
+example : map' (mk₆' f g h i j k) 3 6 = i ≫ j ≫ k := by dsimp
+example : map' (mk₆' f g h i j k) 5 6 = k := by dsimp
+
+example : map' (mk₇' f g h i j k l) 0 7 = f ≫ g ≫ h ≫ i ≫ j ≫ k ≫ l := by dsimp
+example : map' (mk₇' f g h i j k l) 4 7 = j ≫ k ≫ l := by dsimp
+example : map' (mk₇' f g h i j k l) 6 7 = l := by dsimp
+
 end DeeperStress
+
+section SymbolicSmoke
+
+variable {n : ℕ} (F : ComposableArrows C n) (X : C) (u : X ⟶ F.left)
+variable (a b : Fin (n + 1 + 1)) (hab : a ≤ b)
+
+example : Precomp.obj F X a = Precomp.obj F X a := by dsimp
+example : Precomp.map F u a b hab = Precomp.map F u a b hab := by dsimp
+
+end SymbolicSmoke
 
 end CategoryTheory.ComposableArrows.PrecompReductionResearch
