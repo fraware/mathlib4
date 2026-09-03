@@ -1,0 +1,48 @@
+name: Composable arrows integrated research
+
+on:
+  push:
+    branches:
+      - research/2026-09-03-composable-arrows-integrated
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          use-github-cache: false
+          use-mathlib-cache: false
+      - name: Fetch Mathlib cache
+        run: lake exe cache get
+      - name: Apply integrated production experiment
+        run: |
+          python3 scripts/research_composable_arrows_integrated.py
+          git diff --check
+          if git grep -n '27382\|\[-Fin.reduceFinMk\]\|attribute \[-simp\] Fin.reduceFinMk' -- \
+            Mathlib/CategoryTheory/ComposableArrows/Basic.lean \
+            Mathlib/Algebra/Homology/ExactSequence.lean \
+            Mathlib/Algebra/Homology/HomologySequence.lean \
+            Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean; then
+            echo 'stale composable-arrows workaround remains' >&2
+            exit 1
+          fi
+          git diff -- \
+            Mathlib/CategoryTheory/ComposableArrows/Basic.lean \
+            Mathlib/Algebra/Homology/ExactSequence.lean \
+            Mathlib/Algebra/Homology/HomologySequence.lean \
+            Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean
+      - name: Build integrated candidate and affected consumers
+        run: |
+          lake build \
+            Mathlib.CategoryTheory.ComposableArrows.Basic \
+            Mathlib.Algebra.Homology.ExactSequence \
+            Mathlib.Algebra.Homology.HomologySequence \
+            Mathlib.Algebra.Homology.HomotopyCategory.ShortExact \
+            MathlibTest.ComposableArrowsIntegratedProbe
