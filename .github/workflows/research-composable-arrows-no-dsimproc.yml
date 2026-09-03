@@ -1,0 +1,29 @@
+name: Composable arrows no-dsimproc research
+
+on:
+  push:
+    branches:
+      - research/2026-09-03-composable-arrows-no-dsimproc
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          use-github-cache: false
+          use-mathlib-cache: false
+      - name: Fetch Mathlib cache
+        run: lake exe cache get
+      - name: Apply minimal candidate
+        run: |
+          python3 scripts/research_composable_arrows_no_dsimproc.py
+          git diff --check
+      - name: Build Basic
+        run: lake build Mathlib.CategoryTheory.ComposableArrows.Basic
