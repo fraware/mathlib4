@@ -32,6 +32,6 @@ example : map' (mk₇' f g h i j k l) 6 7 = l := by dsimp
 -- Symbolic successor indices keep reducing definitionally; the numeric reducer is not required here.
 variable {n : ℕ} (F : ComposableArrows C n) (X : C) (u : X ⟶ F.left)
 variable (q : Fin (n + 1))
-example : Precomp.obj F X q.succ = F.obj q := by dsimp
+example : Precomp.obj F X q.succ = F.obj q := by rfl
 
 end CategoryTheory.ComposableArrows.IntegratedProbe
