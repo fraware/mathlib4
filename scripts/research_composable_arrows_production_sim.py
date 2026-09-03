@@ -54,6 +54,26 @@ dsimproc reduceMap (Precomp.map _ _ _ _ _) := fun e => do
 
 '''
 text = text.replace(marker, marker + reducer)
+
+
+def add_explicit_iso_laws(source: str, name: str, next_lemma: str, ext_lemma: str) -> str:
+    start = source.index(f"def {name}")
+    end = source.index(f"\n\nlemma {next_lemma}", start)
+    block = source[start:end]
+    if "hom_inv_id :=" in block or "inv_hom_id :=" in block:
+        raise SystemExit(f"{name} already has explicit inverse laws")
+    laws = (
+        f"\n  hom_inv_id := by\n"
+        f"    apply {ext_lemma} <;> simp\n"
+        f"  inv_hom_id := by\n"
+        f"    apply {ext_lemma} <;> simp"
+    )
+    return source[:end] + laws + source[end:]
+
+
+text = add_explicit_iso_laws(text, "isoMk₃", "ext₃", "hom_ext₃")
+text = add_explicit_iso_laws(text, "isoMk₄", "ext₄", "hom_ext₄")
+text = add_explicit_iso_laws(text, "isoMk₅", "ext₅", "hom_ext₅")
 basic.write_text(text)
 
 consumers = [
