@@ -44,6 +44,7 @@ jobs:
           diff -u /tmp/expected-files /tmp/actual-files
       - name: Create exact production commit on upstream base
         run: |
+          git reset --hard HEAD
           git checkout --detach "$BASE"
           git apply /tmp/production.patch
           git diff --check
