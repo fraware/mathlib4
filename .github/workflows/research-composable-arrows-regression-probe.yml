@@ -1,0 +1,37 @@
+name: Composable arrows regression probe
+
+on:
+  push:
+    branches:
+      - research/2026-09-29-composable-arrows-regression-probe
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    env:
+      BASE: ed72f1faaeee9bea5805932ae309af92264cd8d1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Fetch frozen base
+        run: git fetch origin ed72f1faaeee9bea5805932ae309af92264cd8d1 --depth=1
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          use-github-cache: false
+          use-mathlib-cache: false
+      - name: Verify probe scope
+        run: |
+          git diff --check "$BASE" HEAD
+          test "$(git diff --name-only "$BASE" HEAD -- Mathlib | wc -l)" = 4
+          test "$(git diff --name-only "$BASE" HEAD -- MathlibTest | wc -l)" = 1
+          git diff --name-only "$BASE" HEAD -- MathlibTest | grep -Fx "MathlibTest/ComposableArrowsIntegratedProbe.lean"
+      - name: Fetch Mathlib cache
+        run: lake exe cache get
+      - name: Build regression probe
+        run: lake build MathlibTest.ComposableArrowsIntegratedProbe
