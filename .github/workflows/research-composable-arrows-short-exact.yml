@@ -17,7 +17,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
+      - name: Fetch frozen base
+        run: git fetch origin ed72f1faaeee9bea5805932ae309af92264cd8d1 --depth=1
       - uses: leanprover/lean-action@v1
         with:
           auto-config: false
@@ -25,12 +27,12 @@ jobs:
           use-mathlib-cache: false
       - name: Verify cleanup scope
         run: |
-          git diff --check "$BASE"...HEAD
-          test "$(git diff --name-only "$BASE"...HEAD -- Mathlib | wc -l)" = 4
-          git diff --name-only "$BASE"...HEAD -- Mathlib | grep -Fx "Mathlib/Algebra/Homology/ExactSequence.lean"
-          git diff --name-only "$BASE"...HEAD -- Mathlib | grep -Fx "Mathlib/Algebra/Homology/HomologySequence.lean"
-          git diff --name-only "$BASE"...HEAD -- Mathlib | grep -Fx "Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean"
-          git diff --name-only "$BASE"...HEAD -- Mathlib | grep -Fx "Mathlib/CategoryTheory/ComposableArrows/Basic.lean"
+          git diff --check "$BASE" HEAD
+          test "$(git diff --name-only "$BASE" HEAD -- Mathlib | wc -l)" = 4
+          git diff --name-only "$BASE" HEAD -- Mathlib | grep -Fx "Mathlib/Algebra/Homology/ExactSequence.lean"
+          git diff --name-only "$BASE" HEAD -- Mathlib | grep -Fx "Mathlib/Algebra/Homology/HomologySequence.lean"
+          git diff --name-only "$BASE" HEAD -- Mathlib | grep -Fx "Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean"
+          git diff --name-only "$BASE" HEAD -- Mathlib | grep -Fx "Mathlib/CategoryTheory/ComposableArrows/Basic.lean"
           ! grep -F 'dsimproc ↓ reduceObj' Mathlib/CategoryTheory/ComposableArrows/Basic.lean
           test "$(grep -cF 'dsimproc reduceMap' Mathlib/CategoryTheory/ComposableArrows/Basic.lean)" = 1
           ! grep -F 'attribute [-simp] Fin.reduceFinMk' Mathlib/CategoryTheory/ComposableArrows/Basic.lean
@@ -40,8 +42,8 @@ jobs:
           ! grep -F -- '-Fin.reduceFinMk' Mathlib/Algebra/Homology/HomologySequence.lean
           ! grep -F '27382' Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean
           ! grep -F -- '-Fin.reduceFinMk' Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean
-          git diff --exit-code "$BASE"...HEAD -- Mathlib/CategoryTheory/Abelian/DiagramLemmas/Four.lean
-          git diff --exit-code "$BASE"...HEAD -- Mathlib/CategoryTheory/Sites/SheafCohomology/MayerVietoris.lean
+          git diff --exit-code "$BASE" HEAD -- Mathlib/CategoryTheory/Abelian/DiagramLemmas/Four.lean
+          git diff --exit-code "$BASE" HEAD -- Mathlib/CategoryTheory/Sites/SheafCohomology/MayerVietoris.lean
       - name: Fetch Mathlib cache
         run: lake exe cache get
       - name: Build affected modules
