@@ -26,15 +26,18 @@ jobs:
       - name: Verify cleanup scope
         run: |
           git diff --check "$BASE"...HEAD
-          printf '%s
-' "$(git diff --name-only "$BASE"...HEAD -- Mathlib | sort)" | diff -u - <(printf '%s
-'             "Mathlib/Algebra/Homology/ExactSequence.lean"             "Mathlib/CategoryTheory/ComposableArrows/Basic.lean")
+          test "$(git diff --name-only "$BASE"...HEAD -- Mathlib | wc -l)" = 2
+          git diff --name-only "$BASE"...HEAD -- Mathlib | grep -Fx "Mathlib/Algebra/Homology/ExactSequence.lean"
+          git diff --name-only "$BASE"...HEAD -- Mathlib | grep -Fx "Mathlib/CategoryTheory/ComposableArrows/Basic.lean"
           ! grep -F 'dsimproc ↓ reduceObj' Mathlib/CategoryTheory/ComposableArrows/Basic.lean
           test "$(grep -cF 'dsimproc reduceMap' Mathlib/CategoryTheory/ComposableArrows/Basic.lean)" = 1
           ! grep -F 'attribute [-simp] Fin.reduceFinMk' Mathlib/CategoryTheory/ComposableArrows/Basic.lean
           ! grep -F '27382' Mathlib/Algebra/Homology/ExactSequence.lean
           ! grep -F -- '-Fin.reduceFinMk' Mathlib/Algebra/Homology/ExactSequence.lean
-          git diff --exit-code "$BASE"...HEAD --             Mathlib/Algebra/Homology/HomologySequence.lean             Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean             Mathlib/CategoryTheory/Abelian/DiagramLemmas/Four.lean             Mathlib/CategoryTheory/Sites/SheafCohomology/MayerVietoris.lean
+          git diff --exit-code "$BASE"...HEAD -- Mathlib/Algebra/Homology/HomologySequence.lean
+          git diff --exit-code "$BASE"...HEAD -- Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean
+          git diff --exit-code "$BASE"...HEAD -- Mathlib/CategoryTheory/Abelian/DiagramLemmas/Four.lean
+          git diff --exit-code "$BASE"...HEAD -- Mathlib/CategoryTheory/Sites/SheafCohomology/MayerVietoris.lean
       - name: Fetch Mathlib cache
         run: lake exe cache get
       - name: Build Basic and ExactSequence
