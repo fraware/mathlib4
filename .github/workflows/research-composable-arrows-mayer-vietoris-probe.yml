@@ -1,0 +1,36 @@
+name: Composable arrows MayerVietoris probe
+
+on:
+  push:
+    branches:
+      - research/2026-09-29-composable-arrows-mayer-vietoris-probe
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mayer:
+    runs-on: ubuntu-latest
+    env:
+      BASE: ed72f1faaeee9bea5805932ae309af92264cd8d1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Fetch frozen base
+        run: git fetch origin ed72f1faaeee9bea5805932ae309af92264cd8d1 --depth=1
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          use-github-cache: false
+          use-mathlib-cache: false
+      - name: Verify probe scope
+        run: |
+          git diff --check "$BASE" HEAD
+          test "$(git diff --name-only "$BASE" HEAD -- Mathlib | wc -l)" = 4
+          git diff --exit-code "$BASE" HEAD -- Mathlib/CategoryTheory/Sites/SheafCohomology/MayerVietoris.lean
+      - name: Fetch Mathlib cache
+        run: lake exe cache get
+      - name: Build MayerVietoris
+        run: lake build Mathlib.CategoryTheory.Sites.SheafCohomology.MayerVietoris
