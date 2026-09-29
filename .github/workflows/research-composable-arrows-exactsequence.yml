@@ -26,8 +26,11 @@ jobs:
       - name: Verify consumer scope
         run: |
           git diff --check "$BASE"...HEAD
-          printf '%s
-'             Mathlib/Algebra/Homology/ExactSequence.lean             Mathlib/CategoryTheory/ComposableArrows/Basic.lean | sort > /tmp/expected
+          cat > /tmp/expected <<'EOF'
+          Mathlib/Algebra/Homology/ExactSequence.lean
+          Mathlib/CategoryTheory/ComposableArrows/Basic.lean
+          EOF
+          sort -o /tmp/expected /tmp/expected
           git diff --name-only "$BASE"...HEAD -- Mathlib | sort > /tmp/actual
           diff -u /tmp/expected /tmp/actual
           ! grep -F 'attribute [-simp] Fin.reduceFinMk' Mathlib/CategoryTheory/ComposableArrows/Basic.lean
