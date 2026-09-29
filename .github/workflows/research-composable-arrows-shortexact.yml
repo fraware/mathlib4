@@ -1,0 +1,54 @@
+name: Composable arrows ShortExact consumer
+
+on:
+  push:
+    branches:
+      - research/2026-09-29-composable-arrows-shortexact
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shortexact:
+    runs-on: ubuntu-latest
+    env:
+      BASE: ed72f1faaeee9bea5805932ae309af92264cd8d1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          use-github-cache: false
+          use-mathlib-cache: false
+      - name: Verify consumer scope
+        run: |
+          git diff --check "$BASE"...HEAD
+          cat > /tmp/expected <<'EOF'
+          Mathlib/Algebra/Homology/ExactSequence.lean
+          Mathlib/Algebra/Homology/HomologySequence.lean
+          Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean
+          Mathlib/CategoryTheory/ComposableArrows/Basic.lean
+          EOF
+          sort -o /tmp/expected /tmp/expected
+          git diff --name-only "$BASE"...HEAD -- Mathlib | sort > /tmp/actual
+          diff -u /tmp/expected /tmp/actual
+          ! grep -F 'attribute [-simp] Fin.reduceFinMk' Mathlib/CategoryTheory/ComposableArrows/Basic.lean
+          ! grep -F 'dsimproc ↓ reduceObj' Mathlib/CategoryTheory/ComposableArrows/Basic.lean
+          test "$(grep -cF 'dsimproc reduceMap' Mathlib/CategoryTheory/ComposableArrows/Basic.lean)" = 1
+          ! grep -F '27382' Mathlib/Algebra/Homology/ExactSequence.lean
+          ! grep -F -- '-Fin.reduceFinMk' Mathlib/Algebra/Homology/ExactSequence.lean
+          ! grep -F '27382' Mathlib/Algebra/Homology/HomologySequence.lean
+          ! grep -F -- '-Fin.reduceFinMk' Mathlib/Algebra/Homology/HomologySequence.lean
+          ! grep -F '27382' Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean
+          ! grep -F -- '-Fin.reduceFinMk' Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean
+      - name: Fetch Mathlib cache
+        run: lake exe cache get
+      - name: Build affected modules
+        run: |
+          lake build Mathlib.CategoryTheory.ComposableArrows.Basic
+          lake build Mathlib.Algebra.Homology.ExactSequence
+          lake build Mathlib.Algebra.Homology.HomologySequence
+          lake build Mathlib.Algebra.Homology.HomotopyCategory.ShortExact
