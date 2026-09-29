@@ -42,20 +42,6 @@ TODO (@joelriou):
 
 @[expose] public section
 
-/-!
-New `simprocs` that run even in `dsimp` have caused breakages in this file.
-
-(e.g. `dsimp` can now simplify `2 + 3` to `5`)
-
-For now, we just turn off the offending simprocs in this file.
-
-*However*, hopefully it is possible to refactor the material here so that no disabling of
-simprocs is needed.
-
-See issue https://github.com/leanprover-community/mathlib4/issues/27382.
--/
-attribute [-simp] Fin.reduceFinMk
-
 namespace CategoryTheory
 
 open Category
@@ -367,6 +353,26 @@ lemma map_succ_succ (i j : ℕ) (hi : i + 1 < n + 1 + 1) (hj : j + 1 < n + 1 + 1
 @[simp]
 lemma map_one_succ (j : ℕ) (hj : j + 1 < n + 1 + 1) :
     map F f 1 ⟨j + 1, hj⟩ (by simp [Fin.le_def]) = F.map' 0 j := rfl
+
+open Lean
+
+dsimproc reduceMap (Precomp.map _ _ _ _ _) := fun e => do
+  let_expr Precomp.map _C _inst _n F _X f i j _hij := e | return .continue
+  let some ⟨boundI, iVal⟩ ← Meta.getFinValue? i | return .continue
+  let some ⟨boundJ, jVal⟩ ← Meta.getFinValue? j | return .continue
+  unless boundI = boundJ do return .continue
+  unless iVal.val ≤ jVal.val do return .continue
+  let i' := toExpr iVal
+  let j' := toExpr jVal
+  let leExpr ← Meta.mkAppM ``LE.le #[i', j']
+  let hij ← Meta.mkDecideProof leExpr
+  let result ← Meta.mkAppM ``Precomp.map #[F, f, i', j', hij]
+  let result ← Meta.withTransparency .implicit <|
+    Meta.whnfHeadPred result fun e => return e.isAppOf ``Precomp.map
+  if result == e then
+    return .continue
+  else
+    return .visit result
 
 lemma map_id (i : Fin (n + 1 + 1)) : map F f i i (by simp) = 𝟙 _ := by
   obtain ⟨_ | _, hi⟩ := i <;> simp
@@ -785,6 +791,10 @@ def isoMk₃ {f g : ComposableArrows C 3}
       comp_id, app₁.hom_inv_id_assoc])
     (by rw [← cancel_epi app₂.hom, ← reassoc_of% w₂, app₃.hom_inv_id,
       comp_id, app₂.hom_inv_id_assoc])
+  hom_inv_id :=
+    (isoMkSucc app₀ (isoMk₂ app₁ app₂ app₃ w₁ w₂) w₀).hom_inv_id
+  inv_hom_id :=
+    (isoMkSucc app₀ (isoMk₂ app₁ app₂ app₃ w₁ w₂) w₀).inv_hom_id
 
 lemma ext₃ {f g : ComposableArrows C 3}
     (h₀ : f.obj' 0 = g.obj' 0) (h₁ : f.obj' 1 = g.obj' 1) (h₂ : f.obj' 2 = g.obj' 2)
@@ -868,6 +878,10 @@ def isoMk₄ {f g : ComposableArrows C 4}
     (by rw [map'_inv_eq_inv_map' (by valid) app₁ app₂ w₁])
     (by rw [map'_inv_eq_inv_map' (by valid) app₂ app₃ w₂])
     (by rw [map'_inv_eq_inv_map' (by valid) app₃ app₄ w₃])
+  hom_inv_id :=
+    (isoMkSucc app₀ (isoMk₃ app₁ app₂ app₃ app₄ w₁ w₂ w₃) w₀).hom_inv_id
+  inv_hom_id :=
+    (isoMkSucc app₀ (isoMk₃ app₁ app₂ app₃ app₄ w₁ w₂ w₃) w₀).inv_hom_id
 
 lemma ext₄ {f g : ComposableArrows C 4}
     (h₀ : f.obj' 0 = g.obj' 0) (h₁ : f.obj' 1 = g.obj' 1) (h₂ : f.obj' 2 = g.obj' 2)
