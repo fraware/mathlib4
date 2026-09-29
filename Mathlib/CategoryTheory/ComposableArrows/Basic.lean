@@ -356,23 +356,6 @@ lemma map_one_succ (j : ℕ) (hj : j + 1 < n + 1 + 1) :
 
 open Lean
 
-dsimproc reduceMap (Precomp.map _ _ _ _ _) := fun e => do
-  let_expr Precomp.map _C _inst _n F _X f i j _hij := e | return .continue
-  let some ⟨boundI, iVal⟩ ← Meta.getFinValue? i | return .continue
-  let some ⟨boundJ, jVal⟩ ← Meta.getFinValue? j | return .continue
-  unless boundI = boundJ do return .continue
-  unless iVal.val ≤ jVal.val do return .continue
-  let i' := toExpr iVal
-  let j' := toExpr jVal
-  let leExpr ← Meta.mkAppM ``LE.le #[i', j']
-  let hij ← Meta.mkDecideProof leExpr
-  let result ← Meta.mkAppM ``Precomp.map #[F, f, i', j', hij]
-  let result ← Meta.withTransparency .implicit <|
-    Meta.whnfHeadPred result fun e => return e.isAppOf ``Precomp.map
-  if result == e then
-    return .continue
-  else
-    return .visit result
 
 lemma map_id (i : Fin (n + 1 + 1)) : map F f i i (by simp) = 𝟙 _ := by
   obtain ⟨_ | _, hi⟩ := i <;> simp
