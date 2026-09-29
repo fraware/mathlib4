@@ -356,21 +356,6 @@ lemma map_one_succ (j : ℕ) (hj : j + 1 < n + 1 + 1) :
 
 open Lean
 
-dsimproc ↓ reduceObj (Precomp.obj _ _ _) := fun e => do
-  let_expr Precomp.obj _C _inst _n F X ei := ← Meta.whnfR e | return .continue
-  let some ⟨bound, i⟩ ← Meta.getFinValue? ei | return .continue
-  if h₀ : i.val = 0 then
-    return .visit X
-  else if 1 < bound then
-    have hi : i.val - 1 < bound - 1 :=
-      Nat.sub_lt_sub_right (Nat.one_le_iff_ne_zero.mpr h₀) i.isLt
-    let idx := toExpr (⟨i.val - 1, hi⟩ : Fin (bound - 1))
-    let result ← Meta.mkAppM ``Functor.obj #[F, idx]
-    let result ← Meta.withTransparency .implicit <| Meta.whnf result
-    return .visit result
-  else
-    return .continue
-
 dsimproc reduceMap (Precomp.map _ _ _ _ _) := fun e => do
   let_expr Precomp.map _C _inst _n F _X f i j _hij := e | return .continue
   let some ⟨boundI, iVal⟩ ← Meta.getFinValue? i | return .continue
