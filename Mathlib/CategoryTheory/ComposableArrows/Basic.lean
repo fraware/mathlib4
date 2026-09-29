@@ -806,6 +806,10 @@ def isoMk₃ {f g : ComposableArrows C 3}
       comp_id, app₁.hom_inv_id_assoc])
     (by rw [← cancel_epi app₂.hom, ← reassoc_of% w₂, app₃.hom_inv_id,
       comp_id, app₂.hom_inv_id_assoc])
+  hom_inv_id :=
+    (isoMkSucc app₀ (isoMk₂ app₁ app₂ app₃ w₁ w₂) w₀).hom_inv_id
+  inv_hom_id :=
+    (isoMkSucc app₀ (isoMk₂ app₁ app₂ app₃ w₁ w₂) w₀).inv_hom_id
 
 lemma ext₃ {f g : ComposableArrows C 3}
     (h₀ : f.obj' 0 = g.obj' 0) (h₁ : f.obj' 1 = g.obj' 1) (h₂ : f.obj' 2 = g.obj' 2)
