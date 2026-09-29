@@ -1,0 +1,40 @@
+name: Composable arrows Four probe
+
+on:
+  push:
+    branches:
+      - research/2026-09-29-composable-arrows-four-probe
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  four:
+    runs-on: ubuntu-latest
+    env:
+      BASE: ed72f1faaeee9bea5805932ae309af92264cd8d1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Fetch frozen base
+        run: git fetch origin ed72f1faaeee9bea5805932ae309af92264cd8d1 --depth=1
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          use-github-cache: false
+          use-mathlib-cache: false
+      - name: Verify probe scope
+        run: |
+          git diff --check "$BASE" HEAD
+          test "$(git diff --name-only "$BASE" HEAD -- Mathlib | wc -l)" = 4
+          git diff --name-only "$BASE" HEAD -- Mathlib | grep -Fx "Mathlib/Algebra/Homology/ExactSequence.lean"
+          git diff --name-only "$BASE" HEAD -- Mathlib | grep -Fx "Mathlib/Algebra/Homology/HomologySequence.lean"
+          git diff --name-only "$BASE" HEAD -- Mathlib | grep -Fx "Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean"
+          git diff --name-only "$BASE" HEAD -- Mathlib | grep -Fx "Mathlib/CategoryTheory/ComposableArrows/Basic.lean"
+          git diff --exit-code "$BASE" HEAD -- Mathlib/CategoryTheory/Abelian/DiagramLemmas/Four.lean
+      - name: Fetch Mathlib cache
+        run: lake exe cache get
+      - name: Build Four
+        run: lake build Mathlib.CategoryTheory.Abelian.DiagramLemmas.Four
