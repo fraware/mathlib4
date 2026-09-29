@@ -1,0 +1,38 @@
+name: Composable arrows isoMk3 recursive discriminator
+
+on:
+  push:
+    branches:
+      - research/2026-09-29-composable-arrows-iso3-recursive
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  basic:
+    runs-on: ubuntu-latest
+    env:
+      BASE: ed72f1faaeee9bea5805932ae309af92264cd8d1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          use-github-cache: false
+          use-mathlib-cache: false
+      - name: Verify discriminator scope
+        run: |
+          git diff --check "$BASE"...HEAD
+          test "$(git diff --name-only "$BASE"...HEAD -- Mathlib | sort)" =             "Mathlib/CategoryTheory/ComposableArrows/Basic.lean"
+          test "$(grep -cF 'dsimproc ↓ reduceObj' Mathlib/CategoryTheory/ComposableArrows/Basic.lean)" = 1
+          test "$(grep -cF 'dsimproc reduceMap' Mathlib/CategoryTheory/ComposableArrows/Basic.lean)" = 1
+          test "$(grep -cF '(isoMkSucc app₀ (isoMk₂ app₁ app₂ app₃ w₁ w₂) w₀).hom_inv_id' Mathlib/CategoryTheory/ComposableArrows/Basic.lean)" = 1
+          test "$(grep -cF '(isoMkSucc app₀ (isoMk₂ app₁ app₂ app₃ w₁ w₂) w₀).inv_hom_id' Mathlib/CategoryTheory/ComposableArrows/Basic.lean)" = 1
+          ! grep -F 'attribute [-simp] Fin.reduceFinMk' Mathlib/CategoryTheory/ComposableArrows/Basic.lean
+      - name: Fetch Mathlib cache
+        run: lake exe cache get
+      - name: Build ComposableArrows Basic
+        run: lake build Mathlib.CategoryTheory.ComposableArrows.Basic
