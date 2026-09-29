@@ -893,6 +893,10 @@ def isoMk₄ {f g : ComposableArrows C 4}
     (by rw [map'_inv_eq_inv_map' (by valid) app₁ app₂ w₁])
     (by rw [map'_inv_eq_inv_map' (by valid) app₂ app₃ w₂])
     (by rw [map'_inv_eq_inv_map' (by valid) app₃ app₄ w₃])
+  hom_inv_id :=
+    (isoMkSucc app₀ (isoMk₃ app₁ app₂ app₃ app₄ w₁ w₂ w₃) w₀).hom_inv_id
+  inv_hom_id :=
+    (isoMkSucc app₀ (isoMk₃ app₁ app₂ app₃ app₄ w₁ w₂ w₃) w₀).inv_hom_id
 
 lemma ext₄ {f g : ComposableArrows C 4}
     (h₀ : f.obj' 0 = g.obj' 0) (h₁ : f.obj' 1 = g.obj' 1) (h₂ : f.obj' 2 = g.obj' 2)
