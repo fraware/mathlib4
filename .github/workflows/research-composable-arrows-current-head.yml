@@ -1,0 +1,49 @@
+name: Composable arrows current-head validation
+
+on:
+  push:
+    branches:
+      - research/2026-09-29-composable-arrows-current-head
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  targeted:
+    runs-on: ubuntu-latest
+    env:
+      BASE: 5b00c8608587c45d718c6148fc5df558afcc7b41
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Fetch current base
+        run: git fetch origin 5b00c8608587c45d718c6148fc5df558afcc7b41 --depth=1
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          use-github-cache: false
+          use-mathlib-cache: false
+      - name: Verify current-head scope
+        run: |
+          git diff --check "$BASE" HEAD
+          test "$(git diff --name-only "$BASE" HEAD -- Mathlib | wc -l)" = 4
+          git diff --name-only "$BASE" HEAD -- Mathlib | grep -Fx "Mathlib/CategoryTheory/ComposableArrows/Basic.lean"
+          git diff --name-only "$BASE" HEAD -- Mathlib | grep -Fx "Mathlib/Algebra/Homology/ExactSequence.lean"
+          git diff --name-only "$BASE" HEAD -- Mathlib | grep -Fx "Mathlib/Algebra/Homology/HomologySequence.lean"
+          git diff --name-only "$BASE" HEAD -- Mathlib | grep -Fx "Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean"
+          test "$(git diff --name-only "$BASE" HEAD -- MathlibTest | wc -l)" = 1
+          git diff --name-only "$BASE" HEAD -- MathlibTest | grep -Fx "MathlibTest/ComposableArrowsIntegratedProbe.lean"
+          git diff --exit-code "$BASE" HEAD -- Mathlib/CategoryTheory/Abelian/DiagramLemmas/Four.lean
+          git diff --exit-code "$BASE" HEAD -- Mathlib/CategoryTheory/Sites/SheafCohomology/MayerVietoris.lean
+          ! grep -F 'attribute [-simp] Fin.reduceFinMk' Mathlib/CategoryTheory/ComposableArrows/Basic.lean
+          ! grep -F 'dsimproc ↓ reduceObj' Mathlib/CategoryTheory/ComposableArrows/Basic.lean
+          test "$(grep -cF 'dsimproc reduceMap' Mathlib/CategoryTheory/ComposableArrows/Basic.lean)" = 1
+          ! grep -R -F -- '-Fin.reduceFinMk' Mathlib/Algebra/Homology/ExactSequence.lean Mathlib/Algebra/Homology/HomologySequence.lean Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean
+      - name: Fetch Mathlib cache
+        run: lake exe cache get
+      - name: Build targeted modules
+        run: lake build Mathlib.CategoryTheory.ComposableArrows.Basic Mathlib.Algebra.Homology.ExactSequence Mathlib.Algebra.Homology.HomologySequence Mathlib.Algebra.Homology.HomotopyCategory.ShortExact Mathlib.CategoryTheory.Abelian.DiagramLemmas.Four Mathlib.CategoryTheory.Sites.SheafCohomology.MayerVietoris
+      - name: Build regression probe
+        run: lake build MathlibTest.ComposableArrowsIntegratedProbe
