@@ -1,0 +1,37 @@
+name: Composable arrows phase 1
+
+on:
+  push:
+    branches:
+      - research/2026-09-29-composable-arrows-phase1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  basic:
+    runs-on: ubuntu-latest
+    env:
+      BASE: ed72f1faaeee9bea5805932ae309af92264cd8d1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          use-github-cache: false
+          use-mathlib-cache: false
+      - name: Verify phase 1 scope
+        run: |
+          git diff --check "$BASE"...HEAD
+          test "$(git diff --name-only "$BASE"...HEAD -- Mathlib | sort)" =             "Mathlib/CategoryTheory/ComposableArrows/Basic.lean"
+          git diff --exit-code "$BASE"...HEAD --             Mathlib/Algebra/Homology/ExactSequence.lean             Mathlib/Algebra/Homology/HomologySequence.lean             Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean             Mathlib/CategoryTheory/Abelian/DiagramLemmas/Four.lean             Mathlib/CategoryTheory/Sites/SheafCohomology/MayerVietoris.lean
+          test "$(grep -cF 'dsimproc ↓ reduceObj' Mathlib/CategoryTheory/ComposableArrows/Basic.lean)" = 1
+          test "$(grep -cF 'dsimproc reduceMap' Mathlib/CategoryTheory/ComposableArrows/Basic.lean)" = 1
+          ! grep -F 'attribute [-simp] Fin.reduceFinMk' Mathlib/CategoryTheory/ComposableArrows/Basic.lean
+      - name: Fetch Mathlib cache
+        run: lake exe cache get
+      - name: Build ComposableArrows Basic
+        run: lake build Mathlib.CategoryTheory.ComposableArrows.Basic
