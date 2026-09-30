@@ -1,0 +1,20 @@
+name: Composable arrows production style
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research/2026-09-30-composable-arrows-release-candidate
+
+permissions:
+  contents: read
+
+jobs:
+  style:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: leanprover-community/lint-style-action@a7e7428fa44f9635d6eb8e01919d16fd498d387a
+        with:
+          mode: check
+          lint-bib-file: true
+          ref: research/2026-09-30-composable-arrows-production-style
