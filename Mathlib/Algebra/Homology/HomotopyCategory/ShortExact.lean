@@ -149,12 +149,10 @@ lemma quasiIso_descShortComplex : QuasiIso (descShortComplex S) where
         ((homologyFunctorFactors C (up ℤ) _).hom.naturality S.f)
         (by
           erw [(homologyFunctorFactors C (up ℤ) n).hom.naturality_assoc]
-          -- Disable `Fin.reduceFinMk`, otherwise `Precomp.obj_succ` does not fire. (https://github.com/leanprover-community/mathlib4/issues/27382)
-          dsimp [-Fin.reduceFinMk]
+          dsimp
           rw [← HomologicalComplex.homologyMap_comp, inr_descShortComplex])
         (by
-          -- Disable `Fin.reduceFinMk`, otherwise `Precomp.obj_succ` does not fire. (https://github.com/leanprover-community/mathlib4/issues/27382)
-          dsimp [-Fin.reduceFinMk]
+          dsimp
           erw [homologySequenceδ_triangleh hS]
           simp only [Functor.comp_obj, HomologicalComplex.homologyFunctor_obj, assoc,
             Iso.inv_hom_id_app, comp_id])
