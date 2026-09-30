@@ -1,0 +1,63 @@
+name: Composable arrows release validation
+
+on:
+  push:
+    branches:
+      - research/2026-09-30-composable-arrows-release-candidate
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      BASE: 380f2aafb622cb2c1c93dac545b6389083c68c51
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Fetch frozen base
+        run: git fetch origin 380f2aafb622cb2c1c93dac545b6389083c68c51 --depth=1
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          use-github-cache: false
+          use-mathlib-cache: false
+      - name: Verify release-candidate scope
+        run: |
+          git diff --check "$BASE" HEAD
+          test "$(git diff --name-only "$BASE" HEAD -- Mathlib | wc -l)" = 4
+          git diff --name-only "$BASE" HEAD -- Mathlib | grep -Fx "Mathlib/CategoryTheory/ComposableArrows/Basic.lean"
+          git diff --name-only "$BASE" HEAD -- Mathlib | grep -Fx "Mathlib/Algebra/Homology/ExactSequence.lean"
+          git diff --name-only "$BASE" HEAD -- Mathlib | grep -Fx "Mathlib/Algebra/Homology/HomologySequence.lean"
+          git diff --name-only "$BASE" HEAD -- Mathlib | grep -Fx "Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean"
+          test "$(git diff --name-only "$BASE" HEAD -- MathlibTest | wc -l)" = 1
+          git diff --name-only "$BASE" HEAD -- MathlibTest | grep -Fx "MathlibTest/ComposableArrowsIntegratedProbe.lean"
+          ! grep -F 'attribute [-simp] Fin.reduceFinMk' Mathlib/CategoryTheory/ComposableArrows/Basic.lean
+          ! grep -F 'dsimproc ↓ reduceObj' Mathlib/CategoryTheory/ComposableArrows/Basic.lean
+          test "$(grep -cF 'dsimproc reduceMap' Mathlib/CategoryTheory/ComposableArrows/Basic.lean)" = 1
+          ! grep -R -F -- '-Fin.reduceFinMk'             Mathlib/Algebra/Homology/ExactSequence.lean             Mathlib/Algebra/Homology/HomologySequence.lean             Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean
+      - name: Fetch Mathlib cache
+        run: lake exe cache get
+      - name: Check generated aggregate imports
+        run: lake exe mk_all --check
+      - name: Build CI target set
+        run: lake build Mathlib Archive Counterexamples Wanted
+      - name: Check quiet replay
+        run: |
+          buildMsgs="$(lake build -q --iofail Mathlib Archive Counterexamples Wanted)"
+          if [ -n "$buildMsgs" ]; then
+            printf '%s\n' "$buildMsgs"
+            exit 1
+          fi
+      - name: Build regression probe
+        run: lake build MathlibTest.ComposableArrowsIntegratedProbe
+      - name: Run full tests
+        run: lake --iofail test
+      - name: Run declaration lint
+        timeout-minutes: 40
+        run: |
+          set -o pipefail
+          env LEAN_ABORT_ON_PANIC=1 stdbuf -oL lake lint -- --trace 2>&1 | tee .lake/composable_arrows_release_lint.txt
