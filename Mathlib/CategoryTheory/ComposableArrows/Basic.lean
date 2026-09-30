@@ -356,6 +356,8 @@ lemma map_one_succ (j : ℕ) (hj : j + 1 < n + 1 + 1) :
 
 open Lean
 
+/-- Normalize concrete `Fin` arguments to `Precomp.map` so definitional reduction can proceed
+after `Fin.reduceFinMk` has evaluated index expressions. -/
 dsimproc reduceMap (Precomp.map _ _ _ _ _) := fun e => do
   let_expr Precomp.map _C _inst _n F _X f i j _hij := e | return .continue
   let some ⟨boundI, iVal⟩ ← Meta.getFinValue? i | return .continue
