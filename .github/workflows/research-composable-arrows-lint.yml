@@ -1,0 +1,30 @@
+name: Composable arrows declaration lint
+
+on:
+  push:
+    branches:
+      - research/2026-09-29-composable-arrows-current-head
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          use-github-cache: false
+          use-mathlib-cache: false
+      - name: Fetch Mathlib cache
+        run: lake exe cache get
+      - name: Run Mathlib declaration lint
+        timeout-minutes: 25
+        run: |
+          set -o pipefail
+          env LEAN_ABORT_ON_PANIC=1 stdbuf -oL lake lint -- --trace 2>&1 | tee .lake/composable_arrows_lint.txt
