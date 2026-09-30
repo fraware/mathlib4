@@ -18,6 +18,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
+          ref: a3cfff85f9dfe0b1c6b6e92899febc338687fcc3
       - name: Fetch frozen base
         run: git fetch origin 380f2aafb622cb2c1c93dac545b6389083c68c51 --depth=1
       - uses: leanprover/lean-action@v1
@@ -27,6 +28,8 @@ jobs:
           use-mathlib-cache: false
       - name: Verify release-candidate scope
         run: |
+          test "$(git rev-parse HEAD)" = a3cfff85f9dfe0b1c6b6e92899febc338687fcc3
+          test "$(git diff --name-only "$BASE" HEAD | wc -l)" = 5
           git diff --check "$BASE" HEAD
           test "$(git diff --name-only "$BASE" HEAD -- Mathlib | wc -l)" = 4
           git diff --name-only "$BASE" HEAD -- Mathlib | grep -Fx "Mathlib/CategoryTheory/ComposableArrows/Basic.lean"
@@ -39,6 +42,8 @@ jobs:
           ! grep -F 'dsimproc ↓ reduceObj' Mathlib/CategoryTheory/ComposableArrows/Basic.lean
           test "$(grep -cF 'dsimproc reduceMap' Mathlib/CategoryTheory/ComposableArrows/Basic.lean)" = 1
           ! grep -R -F -- '-Fin.reduceFinMk'             Mathlib/Algebra/Homology/ExactSequence.lean             Mathlib/Algebra/Homology/HomologySequence.lean             Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean
+      - name: Check production style
+        run: lake exe lint-style
       - name: Fetch Mathlib cache
         run: lake exe cache get
       - name: Check generated aggregate imports
