@@ -1,0 +1,33 @@
+--- a/Mathlib/CategoryTheory/ComposableArrows/Basic.lean
++++ b/Mathlib/CategoryTheory/ComposableArrows/Basic.lean
+@@ -356,21 +356,17 @@
+ 
+ open Lean
+ 
+-/-- Normalize concrete `Fin` arguments to `Precomp.map` so definitional reduction can proceed
+-after `Fin.reduceFinMk` has evaluated index expressions. -/
++/-- Reduce `Precomp.map` definitionally when both indices expose `Fin` constructors. -/
+ dsimproc reduceMap (Precomp.map _ _ _ _ _) := fun e => do
+-  let_expr Precomp.map _C _inst _n F _X f i j _hij := e | return .continue
+-  let some ⟨boundI, iVal⟩ ← Meta.getFinValue? i | return .continue
+-  let some ⟨boundJ, jVal⟩ ← Meta.getFinValue? j | return .continue
+-  unless boundI = boundJ do return .continue
+-  unless iVal.val ≤ jVal.val do return .continue
+-  let i' := toExpr iVal
+-  let j' := toExpr jVal
+-  let leExpr ← Meta.mkAppM ``LE.le #[i', j']
+-  let hij ← Meta.mkDecideProof leExpr
+-  let result ← Meta.mkAppM ``Precomp.map #[F, f, i', j', hij]
++  let_expr Precomp.map _C _inst _n _F _X _f i j _hij := e | return .continue
++  let i' ← Meta.withTransparency .implicit <|
++    Meta.whnfHeadPred i fun e => return !e.isAppOf ``Fin.mk
++  let j' ← Meta.withTransparency .implicit <|
++    Meta.whnfHeadPred j fun e => return !e.isAppOf ``Fin.mk
++  unless i'.isAppOfArity ``Fin.mk 3 && j'.isAppOfArity ``Fin.mk 3 do
++    return .continue
+   let result ← Meta.withTransparency .implicit <|
+-    Meta.whnfHeadPred result fun e => return e.isAppOf ``Precomp.map
++    Meta.whnfHeadPred e fun e => return e.isAppOf ``Precomp.map
+   if result == e then
+     return .continue
+   else
