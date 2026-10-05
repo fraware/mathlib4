@@ -187,12 +187,28 @@ def export_evidence(repo, evidence):
             gate_status[stage] = "passed-for-current-source"
         except RuntimeError:
             gate_status[stage] = "pending-failed-or-stale"
+    adv_paths = sorted(
+        str(path.relative_to(evidence))
+        for path in evidence.iterdir()
+        if path.is_file() and (
+            path.name.startswith(("advsuite_", "adv_", "adversarial", "spotcheck", "benchmark-diagnosis"))
+            or path.name in ("advsuite_matrix.json", "adversarial-SUMMARY.md", "CLASSIFICATION.json")
+        )
+    )
+    discrimination = {
+        "status": "completed-artifacts-present" if adv_paths else "missing",
+        "evidence_paths": adv_paths,
+        "note": "Finite original-vs-preferred probes; not a universal reducer theorem.",
+    }
     write_json(evidence / "SUMMARY.json", {
         "base": BASE, "toolchain": TOOLCHAIN, "source_sha256": current, "gates": gate_status,
         "patch_sha256": hashlib.sha256(patch).hexdigest(),
         "files": {p: hashlib.sha256((repo / p).read_bytes()).hexdigest()
                   for p in (BASIC, TEST, INTEGRATED) if (repo / p).exists()},
-        "scope": "Local command evidence; baseline discrimination still needs its separate report.",
+        "scope": "Local command evidence including adversarial discrimination artifacts when present.",
+        "discrimination": discrimination,
+        "candidate": json.loads((BUNDLE / "selection.json").read_text()).get("candidate")
+            if (BUNDLE / "selection.json").exists() else None,
     })
     archive = BUNDLE / "cursor-validation-evidence.zip"
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as bundle:
