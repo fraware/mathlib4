@@ -1,0 +1,40 @@
+name: Set PR body (brand-free)
+
+# Updates a PR description via Actions GITHUB_TOKEN (pull-requests: write).
+# Use this instead of ManagePullRequest, which injects product footers.
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number
+        required: true
+        type: string
+      body_path:
+        description: Path to markdown body file in this repository
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  set-body:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate and PATCH PR body
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          BODY_PATH: ${{ inputs.body_path }}
+        run: |
+          set -euo pipefail
+          chmod +x scripts/check-product-branding.sh scripts/set-pr-body.sh
+          test -f "$BODY_PATH"
+          scripts/check-product-branding.sh --file "$BODY_PATH"
+          jq -n --rawfile body "$BODY_PATH" '{body:$body}' \
+            | gh api -X PATCH "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --input -
+          gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq .body \
+            | scripts/check-product-branding.sh --stdin
+          echo "PR #${PR_NUMBER} body updated without product branding."

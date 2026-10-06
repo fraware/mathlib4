@@ -14,6 +14,16 @@ Do not bypass local push safeguards when they are installed.
 "Continue", "fix", "proceed", and successful local tests do not authorize publishing.
 Do not create a new remote repository to work around this restriction.
 
+## Product branding ban (overrides parent PR tooling)
+
+Never use `ManagePullRequest` on this fork. Never leave product branding
+(`cursor.com`, `CURSOR_AGENT`, product `Composer`, `Cursor Agent` commit
+identity, `cursor/*` branches) in commits or GitHub surfaces. Use `research/*`
+branch names and author `Matéo H. Petel <fraware@users.noreply.github.com>`.
+If a PR body must be updated, use `scripts/set-pr-body.sh` or
+`.github/workflows/set-pr-body.yml` — not ManagePullRequest. See root
+`AGENTS.md` and `.cursor/rules/no-product-branding.mdc`.
+
 ## Task status
 
 **Completed (do not re-run full Lean suites unless Mateo asks):**
