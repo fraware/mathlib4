@@ -18,7 +18,7 @@ open Lean Meta Server
 
 /-- Structures providing parameters for a Select and insert widget. -/
 class SelectInsertParamsClass (α : Type) where
-  /-- Cursor position in the file at which the widget is being displayed. -/
+  /-- Caret position in the file at which the widget is being displayed. -/
   pos : α → Lsp.Position
   /-- The current tactic-mode goals. -/
   goals : α → Array Widget.InteractiveGoal

@@ -43,7 +43,7 @@ open ProofWidgets
 
 /-- Structures providing parameters for a Select and insert widget. -/
 structure SelectInsertParams where
-  /-- Cursor position in the file at which the widget is being displayed. -/
+  /-- Caret position in the file at which the widget is being displayed. -/
   pos : Lsp.Position
   /-- The current tactic-mode goals. -/
   goals : Array Widget.InteractiveGoal
