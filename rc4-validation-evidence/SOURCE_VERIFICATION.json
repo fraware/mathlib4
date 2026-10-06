@@ -1,0 +1,17 @@
+{
+  "source_sha256": "ef3dc5d381ca1010898c59454f38b4a9aeac22e3eddd0f529a1587d07d3e5d51",
+  "lean_executed": true,
+  "toolchain": "leanprover/lean4:v4.35.0-rc4",
+  "lean_version": "Lean (version 4.35.0-rc4, x86_64-unknown-linux-gnu, commit c29b6dda4f7c20e3eeaa717c4e565663c5cfa364, Release)",
+  "gates": {
+    "environment": "passed",
+    "focused": "passed",
+    "downstream": "passed",
+    "full": "passed"
+  },
+  "test_coverage": {
+    "expected": 422,
+    "built_expected": 422,
+    "missing": []
+  }
+}

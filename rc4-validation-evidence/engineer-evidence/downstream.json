@@ -1,0 +1,31 @@
+{
+  "stage": "downstream",
+  "status": "passed",
+  "commands": [
+    {
+      "argv": [
+        "lake",
+        "build",
+        "Mathlib.Algebra.Homology.ExactSequence",
+        "Mathlib.Algebra.Homology.HomologySequence",
+        "Mathlib.Algebra.Homology.HomotopyCategory.ShortExact",
+        "Mathlib.CategoryTheory.ComposableArrows.Four",
+        "Mathlib.Algebra.Homology.ExactSequenceFour",
+        "Mathlib.CategoryTheory.Abelian.DiagramLemmas.Four",
+        "Mathlib.CategoryTheory.Sites.SheafCohomology.MayerVietoris",
+        "Mathlib.Topology.Sheaves.MayerVietoris"
+      ],
+      "exit_code": 0,
+      "log": "downstream-1791314880188808813/1.log",
+      "sha256": "c1b2a9d09cfaaa54f060688b18086d17090ac13798f85b1078ff426cb06195a5"
+    }
+  ],
+  "started_unix": 1791314880.0552604,
+  "source_sha256": "ef3dc5d381ca1010898c59454f38b4a9aeac22e3eddd0f529a1587d07d3e5d51",
+  "base": "321b3b85cb86b65144d78546020d53650b0d9071",
+  "resource_environment": {
+    "LEAN_NUM_THREADS": "2",
+    "LAKE_NUM_THREADS": "2"
+  },
+  "finished_unix": 1791314974.458981
+}

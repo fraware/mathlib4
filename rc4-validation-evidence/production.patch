@@ -1,0 +1,309 @@
+diff --git a/Mathlib/Algebra/Homology/ExactSequence.lean b/Mathlib/Algebra/Homology/ExactSequence.lean
+index 9e8b3dfecd0ed2c92177e512323c9a0c559b6509..2df50c03a4c8aeb8abd4f2f7623845f6fafec573 100644
+--- a/Mathlib/Algebra/Homology/ExactSequence.lean
++++ b/Mathlib/Algebra/Homology/ExactSequence.lean
+@@ -225,8 +225,7 @@ lemma isComplex₂_mk (S : ComposableArrows C 2) (w : S.map' 0 1 ≫ S.map' 1 2
+ set_option backward.isDefEq.respectTransparency false in
+ lemma _root_.CategoryTheory.ShortComplex.isComplex_toComposableArrows (S : ShortComplex C) :
+     S.toComposableArrows.IsComplex :=
+-  -- Disable `Fin.reduceFinMk` because otherwise `Precompose.map_one_succ` does not apply. (https://github.com/leanprover-community/mathlib4/issues/27382)
+-  isComplex₂_mk _ (by simp [-Fin.reduceFinMk])
++  isComplex₂_mk _ (by simp)
+ 
+ lemma exact₂_iff (S : ComposableArrows C 2) (hS : S.IsComplex) :
+     S.Exact ↔ (S.sc' hS 0 1 2).Exact := by
+diff --git a/Mathlib/Algebra/Homology/HomologySequence.lean b/Mathlib/Algebra/Homology/HomologySequence.lean
+index 3c1f7c810ab91d41268aa5c5cf3f498c5215a687..8bd75285ee2789161dc4a4aaed10f883b49325a4 100644
+--- a/Mathlib/Algebra/Homology/HomologySequence.lean
++++ b/Mathlib/Algebra/Homology/HomologySequence.lean
+@@ -118,8 +118,7 @@ instance [K.HasHomology i] [K.HasHomology j] :
+ set_option backward.defeqAttrib.useBackward true in
+ instance [K.HasHomology i] [K.HasHomology j] :
+     Epi ((composableArrows₃ K i j).map' 2 3) := by
+-  -- Disable `Fin.reduceFinMk`, otherwise `Precomp.obj_succ` does not fire. (https://github.com/leanprover-community/mathlib4/issues/27382)
+-  dsimp [-Fin.reduceFinMk]
++  dsimp
+   infer_instance
+ 
+ include hij in
+@@ -161,8 +160,7 @@ noncomputable def composableArrows₃Functor [CategoryWithHomology C] :
+     HomologicalComplex C c ⥤ ComposableArrows C 3 where
+   obj K := composableArrows₃ K i j
+   map {K L} φ := ComposableArrows.homMk₃ (homologyMap φ i) (opcyclesMap φ i) (cyclesMap φ j)
+-    -- Disable `Fin.reduceFinMk`, otherwise `Precomp.obj_succ` does not fire. (https://github.com/leanprover-community/mathlib4/issues/27382)
+-    (homologyMap φ j) (by simp) (by simp [-Fin.reduceFinMk]) (by simp [-Fin.reduceFinMk])
++    (homologyMap φ j) (by simp) (by simp) (by simp)
+ 
+ end HomologySequence
+ 
+diff --git a/Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean b/Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean
+index 46d55839fc76eaba49ecbb2ae1672237e942172c..ae4adb71f5699bfb518492746556464957b06b30 100644
+--- a/Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean
++++ b/Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean
+@@ -149,12 +149,10 @@ lemma quasiIso_descShortComplex : QuasiIso (descShortComplex S) where
+         ((homologyFunctorFactors C (up ℤ) _).hom.naturality S.f)
+         (by
+           erw [(homologyFunctorFactors C (up ℤ) n).hom.naturality_assoc]
+-          -- Disable `Fin.reduceFinMk`, otherwise `Precomp.obj_succ` does not fire. (https://github.com/leanprover-community/mathlib4/issues/27382)
+-          dsimp [-Fin.reduceFinMk]
++          dsimp
+           rw [← HomologicalComplex.homologyMap_comp, inr_descShortComplex])
+         (by
+-          -- Disable `Fin.reduceFinMk`, otherwise `Precomp.obj_succ` does not fire. (https://github.com/leanprover-community/mathlib4/issues/27382)
+-          dsimp [-Fin.reduceFinMk]
++          dsimp
+           erw [homologySequenceδ_triangleh hS]
+           simp only [Functor.comp_obj, HomologicalComplex.homologyFunctor_obj, assoc,
+             Iso.inv_hom_id_app, comp_id])
+diff --git a/Mathlib/CategoryTheory/ComposableArrows/Basic.lean b/Mathlib/CategoryTheory/ComposableArrows/Basic.lean
+index d0f72d5163cc7f7632a74ab582aeb8fc5eb8ed7f..c668640eeede0641c8509b1ded0ee48b8d545bf5 100644
+--- a/Mathlib/CategoryTheory/ComposableArrows/Basic.lean
++++ b/Mathlib/CategoryTheory/ComposableArrows/Basic.lean
+@@ -42,20 +42,6 @@ TODO (@joelriou):
+ 
+ @[expose] public section
+ 
+-/-!
+-New `simprocs` that run even in `dsimp` have caused breakages in this file.
+-
+-(e.g. `dsimp` can now simplify `2 + 3` to `5`)
+-
+-For now, we just turn off the offending simprocs in this file.
+-
+-*However*, hopefully it is possible to refactor the material here so that no disabling of
+-simprocs is needed.
+-
+-See issue https://github.com/leanprover-community/mathlib4/issues/27382.
+--/
+-attribute [-simp] Fin.reduceFinMk
+-
+ namespace CategoryTheory
+ 
+ open Category
+@@ -368,6 +354,24 @@ lemma map_succ_succ (i j : ℕ) (hi : i + 1 < n + 1 + 1) (hj : j + 1 < n + 1 + 1
+ lemma map_one_succ (j : ℕ) (hj : j + 1 < n + 1 + 1) :
+     map F f 1 ⟨j + 1, hj⟩ (by simp [Fin.le_def]) = F.map' 0 j := rfl
+ 
++open Lean
++
++/-- Reduce `Precomp.map` definitionally when both indices expose `Fin` constructors. -/
++dsimproc reduceMap (Precomp.map _ _ _ _ _) := fun e => do
++  let_expr Precomp.map _C _inst _n _F _X _f i j _hij := e | return .continue
++  let i' ← Meta.withTransparency .implicit <|
++    Meta.whnfHeadPred i fun e => return !e.isAppOf ``Fin.mk
++  let j' ← Meta.withTransparency .implicit <|
++    Meta.whnfHeadPred j fun e => return !e.isAppOf ``Fin.mk
++  unless i'.isAppOfArity ``Fin.mk 3 && j'.isAppOfArity ``Fin.mk 3 do
++    return .continue
++  let result ← Meta.withTransparency .implicit <|
++    Meta.whnfHeadPred e fun e => return e.isAppOf ``Precomp.map
++  if result == e then
++    return .continue
++  else
++    return .visit result
++
+ lemma map_id (i : Fin (n + 1 + 1)) : map F f i i (by simp) = 𝟙 _ := by
+   obtain ⟨_ | _, hi⟩ := i <;> simp
+ 
+@@ -785,6 +789,10 @@ def isoMk₃ {f g : ComposableArrows C 3}
+       comp_id, app₁.hom_inv_id_assoc])
+     (by rw [← cancel_epi app₂.hom, ← reassoc_of% w₂, app₃.hom_inv_id,
+       comp_id, app₂.hom_inv_id_assoc])
++  hom_inv_id :=
++    (isoMkSucc app₀ (isoMk₂ app₁ app₂ app₃ w₁ w₂) w₀).hom_inv_id
++  inv_hom_id :=
++    (isoMkSucc app₀ (isoMk₂ app₁ app₂ app₃ w₁ w₂) w₀).inv_hom_id
+ 
+ lemma ext₃ {f g : ComposableArrows C 3}
+     (h₀ : f.obj' 0 = g.obj' 0) (h₁ : f.obj' 1 = g.obj' 1) (h₂ : f.obj' 2 = g.obj' 2)
+@@ -868,6 +876,10 @@ def isoMk₄ {f g : ComposableArrows C 4}
+     (by rw [map'_inv_eq_inv_map' (by valid) app₁ app₂ w₁])
+     (by rw [map'_inv_eq_inv_map' (by valid) app₂ app₃ w₂])
+     (by rw [map'_inv_eq_inv_map' (by valid) app₃ app₄ w₃])
++  hom_inv_id :=
++    (isoMkSucc app₀ (isoMk₃ app₁ app₂ app₃ app₄ w₁ w₂ w₃) w₀).hom_inv_id
++  inv_hom_id :=
++    (isoMkSucc app₀ (isoMk₃ app₁ app₂ app₃ app₄ w₁ w₂ w₃) w₀).inv_hom_id
+ 
+ lemma ext₄ {f g : ComposableArrows C 4}
+     (h₀ : f.obj' 0 = g.obj' 0) (h₁ : f.obj' 1 = g.obj' 1) (h₂ : f.obj' 2 = g.obj' 2)
+diff --git a/MathlibTest/ComposableArrowsIntegratedProbe.lean b/MathlibTest/ComposableArrowsIntegratedProbe.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..8cd2a36faa6fdc70b597c7da3eeae0eecd58252d
+--- /dev/null
++++ b/MathlibTest/ComposableArrowsIntegratedProbe.lean
+@@ -0,0 +1,39 @@
++/-
++Copyright (c) 2026 Mateo Petel. All rights reserved.
++Released under Apache 2.0 license as described in the file LICENSE.
++Authors: Mateo Petel
++-/
++import Mathlib.Algebra.Homology.HomotopyCategory.ShortExact
++
++namespace CategoryTheory.ComposableArrows.IntegratedProbe
++
++open Category
++
++variable {C : Type*} [Category* C]
++variable {X₀ X₁ X₂ X₃ X₄ X₅ X₆ X₇ : C}
++variable (f : X₀ ⟶ X₁) (g : X₁ ⟶ X₂) (h : X₂ ⟶ X₃) (i : X₃ ⟶ X₄)
++  (j : X₄ ⟶ X₅) (k : X₅ ⟶ X₆) (l : X₆ ⟶ X₇)
++
++private abbrev mk₆' := (mk₅ g h i j k).precomp f
++private abbrev mk₇' := (mk₆' g h i j k l).precomp f
++
++example : map' (mk₂ f g) 0 2 = f ≫ g := by dsimp
++example : map' (mk₃ f g h) 0 3 = f ≫ g ≫ h := by dsimp
++example : map' (mk₄ f g h i) 0 4 = f ≫ g ≫ h ≫ i := by dsimp
++example : map' (mk₄ f g h i) 2 4 = h ≫ i := by dsimp
++example : map' (mk₅ f g h i j) 0 5 = f ≫ g ≫ h ≫ i ≫ j := by dsimp
++example : map' (mk₅ f g h i j) 4 5 = j := by dsimp
++example : map' (mk₆' f g h i j k) 0 6 = f ≫ g ≫ h ≫ i ≫ j ≫ k := by dsimp
++example : map' (mk₆' f g h i j k) 5 6 = k := by dsimp
++example : map' (mk₇' f g h i j k l) 0 7 = f ≫ g ≫ h ≫ i ≫ j ≫ k ≫ l := by dsimp
++example : map' (mk₇' f g h i j k l) 6 7 = l := by dsimp
++
++variable (F₁ : ComposableArrows C 1) (X : C)
++example : Precomp.obj F₁ X 1 = F₁.obj 0 := by dsimp
++example : Precomp.obj F₁ X 2 = F₁.obj 1 := by dsimp
++
++variable {n : ℕ} (F : ComposableArrows C n)
++variable (q : Fin (n + 1))
++example : Precomp.obj F X q.succ = F.obj q := by rfl
++
++end CategoryTheory.ComposableArrows.IntegratedProbe
+diff --git a/MathlibTest/ComposableArrowsReduceMap.lean b/MathlibTest/ComposableArrowsReduceMap.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..51e0241d2ee08cb8a03943146d88df96e12ba1c3
+--- /dev/null
++++ b/MathlibTest/ComposableArrowsReduceMap.lean
+@@ -0,0 +1,129 @@
++import Mathlib.CategoryTheory.ComposableArrows.Basic
++
++/-!
++Direct reducer inspection for the preferred `Precomp.reduceMap` candidate.
++
++The check tactics validate visit/decline behavior, then close the equality goal
++with `rfl` (visit cases already proved the needed defeq facts in Meta). This
++avoids `unusedTactic` / `unreachableTactic` from inspection-only tactics followed
++by `dsimp ... <;> rfl`, without disabling linters or weakening assertions.
++-/
++
++open CategoryTheory CategoryTheory.Category
++open CategoryTheory.ComposableArrows
++
++open Lean Meta Elab Tactic in
++/-- Inspect the reducer, then close by `rfl` so a later proof cannot hide a miss. -/
++private def checkReduceMap (expectVisit : Bool) : TacticM Unit := withMainContext do
++  let some (_, lhs, rhs) := (← getMainTarget).eq? |
++    throwError "expected an equality goal"
++  unless lhs.isAppOf ``Precomp.map do
++    throwError "expected Precomp.map on the left"
++  let (step, _) ← Simp.SimpM.run (← Simp.Context.mkDefault) (k := Precomp.reduceMap lhs)
++  match step with
++  | .visit result =>
++    unless expectVisit do
++      throwError "expected the reducer to decline"
++    if result.isAppOf ``Precomp.map then
++      throwError "reducer did not unfold Precomp.map"
++    unless ← withNewMCtxDepth (isDefEq (← inferType result) (← inferType lhs)) do
++      throwError "reducer changed the expression type"
++    unless ← withNewMCtxDepth (isDefEq result lhs) do
++      throwError "reducer violated definitional equality with its input"
++    unless ← withNewMCtxDepth (isDefEq result rhs) do
++      throwError "reducer returned an unexpected expression"
++  | .continue none =>
++    if expectVisit then
++      throwError "expected the reducer to visit a reduced expression"
++  | _ => throwError "unexpected reducer step"
++  -- Close the goal. For visit, Meta already checked result ∼ lhs and result ∼ rhs.
++  evalTactic (← `(tactic| rfl))
++
++elab "check_reduce_map_visit" : tactic => checkReduceMap true
++elab "check_reduce_map_declines" : tactic => checkReduceMap false
++
++universe u v
++
++variable {C : Type u} [Category.{v} C]
++variable (F : ComposableArrows C 2) {X : C} (f : X ⟶ F.left)
++
++-- Cover each defining branch, a diagonal, and a numeral reduced modulo its bound.
++example (p : (0 : Fin 4) ≤ 0) : Precomp.map F f 0 0 p = 𝟙 X := by
++  check_reduce_map_visit
++
++example (p : (0 : Fin 4) ≤ 1) : Precomp.map F f 0 1 p = f := by
++  check_reduce_map_visit
++
++example (p : (0 : Fin 4) ≤ 3) :
++    Precomp.map F f 0 3 p = f ≫ F.map' 0 2 := by
++  check_reduce_map_visit
++
++example (p : (1 : Fin 4) ≤ 3) : Precomp.map F f 1 3 p = F.map' 0 2 := by
++  check_reduce_map_visit
++
++example (p : (2 : Fin 4) ≤ 2) : Precomp.map F f 2 2 p = F.map' 1 1 := by
++  check_reduce_map_visit
++
++example (p : (5 : Fin 4) ≤ 3) : Precomp.map F f 5 3 p = F.map' 0 2 := by
++  check_reduce_map_visit
++
++-- Symbolic constructor arguments must remain supported by definitional reduction.
++example {n : ℕ} (G : ComposableArrows C n) {Y : C} (g : Y ⟶ G.left)
++    (a b : ℕ) (ha : a + 1 < n + 1 + 1) (hb : b + 1 < n + 1 + 1)
++    (p : a + 1 ≤ b + 1) :
++    Precomp.map G g ⟨a + 1, ha⟩ ⟨b + 1, hb⟩ p = G.map' a b := by
++  check_reduce_map_visit
++
++section CustomNumeral
++
++local instance : OfNat (Fin (2 + 1 + 1)) 0 := ⟨⟨1, by decide⟩⟩
++
++-- The baseline verifies the intended meaning of the nonstandard numeral.
++example : Precomp.map F f 0 0 (by rfl) = F.map' 0 0 := by
++  rfl
++
++example : Precomp.map F f 0 0 (by rfl) = F.map' 0 0 := by
++  check_reduce_map_visit
++
++end CustomNumeral
++
++section CustomOrder
++
++local instance (priority := high) : LE (Fin (2 + 1 + 1)) := ⟨fun _ _ => False⟩
++local instance (priority := high) (i j : Fin (2 + 1 + 1)) : Decidable (i ≤ j) :=
++  inferInstanceAs (Decidable False)
++
++-- Precomp.map still expects the original, standard Fin order.
++example : Precomp.map F f 0 1 (Nat.zero_le 1) = f := by
++  rfl
++
++example : Precomp.map F f 0 1 (Nat.zero_le 1) = f := by
++  check_reduce_map_visit
++
++end CustomOrder
++
++section CustomSecondNumeral
++
++local instance : OfNat (Fin (2 + 1 + 1)) 2 := ⟨⟨3, by decide⟩⟩
++
++example : Precomp.map F f 1 2 (by decide) = F.map' 0 2 := by
++  rfl
++
++example : Precomp.map F f 1 2 (by decide) = F.map' 0 2 := by
++  check_reduce_map_visit
++
++end CustomSecondNumeral
++
++section EquivalentNumeral
++
++local instance : OfNat (Fin (2 + 1 + 1)) 0 := ⟨⟨0, by decide⟩⟩
++
++example : Precomp.map F f 0 1 (Nat.zero_le 1) = f := by
++  check_reduce_map_visit
++
++end EquivalentNumeral
++
++-- An opaque symbolic index does not expose a constructor.
++example (i j : Fin 4) (p : i ≤ j) :
++    Precomp.map F f i j p = Precomp.map F f i j p := by
++  check_reduce_map_declines

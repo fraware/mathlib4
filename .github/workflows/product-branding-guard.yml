@@ -1,0 +1,24 @@
+name: Product branding guard
+
+on:
+  push:
+    branches:
+      - 'research/**'
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan evidence-host paths for product branding
+        run: |
+          chmod +x scripts/check-product-branding.sh
+          scripts/check-product-branding.sh --paths

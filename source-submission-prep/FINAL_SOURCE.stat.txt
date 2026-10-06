@@ -1,0 +1,17 @@
+commit 47e94148ec270467ea9cbccf5c56d1d9a6478a75
+Author: Mathlib contributor <mathlib-contributor@users.noreply.github.com>
+Date:   Tue Oct 6 14:36:23 2026 +0000
+
+    feat(CategoryTheory): preserve Fin indices in ComposableArrows.reduceMap
+    
+    Normalize Precomp.map applications by reducing actual Fin indices while
+    preserving supplied proofs and category data. Add inverse-law lemmas and
+    direct/integrated regressions for Fin.reduceFinMk compatibility.
+
+ Mathlib/Algebra/Homology/ExactSequence.lean        |   3 +-
+ Mathlib/Algebra/Homology/HomologySequence.lean     |   6 +-
+ .../Homology/HomotopyCategory/ShortExact.lean      |   6 +-
+ Mathlib/CategoryTheory/ComposableArrows/Basic.lean |  40 ++++---
+ MathlibTest/ComposableArrowsIntegratedProbe.lean   |  39 +++++++
+ MathlibTest/ComposableArrowsReduceMap.lean         | 129 +++++++++++++++++++++
+ 6 files changed, 199 insertions(+), 24 deletions(-)

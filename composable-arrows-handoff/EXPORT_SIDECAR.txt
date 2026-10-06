@@ -1,0 +1,16 @@
+# Historical a3cfff85 campaign export sidecar
+ZIP_SHA256=b985c42fcd3dd4247e4d0a09fcacb0ef043fbfd0b32768abfd1e79568c6a7fc3
+ZIP_BYTES=164342
+FINGERPRINT=cb331cdbe71ce68329a6a2b7450a3acddc5b708a598ef6f72b2d2add68949cf0
+FULL_STATUS=passed
+FULL_TEST_LOG=full-3-1791224613247116264.log
+BENCHMARK=Built MathlibTest.ClickSuggestions.Benchmark (53s)
+
+# Upstream-candidate package (separate; see ../upstream-candidate-evidence/)
+UPSTREAM_ZIP=upstream-validation-evidence.zip
+UPSTREAM_ZIP_SHA256=ce377c085915676c9be3cdf1e1d8b9ac515f437e5b66d2a5c4c49bf93bb6b45c
+UPSTREAM_ZIP_BYTES=240829
+UPSTREAM_SOURCE_SHA256=13281f16b7e423e506d55f180d1ce5448312dd0c47a34900d9fa4a6a5ef07a57
+UPSTREAM_BASE=08c3fc3f372a6d35d18190fb26b7be083378dc38
+UPSTREAM_FULL_STATUS=passed
+UPSTREAM_BENCHMARK=Built MathlibTest.ClickSuggestions.Benchmark (55s)
