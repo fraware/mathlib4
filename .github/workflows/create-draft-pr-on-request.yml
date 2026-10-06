@@ -1,0 +1,66 @@
+name: Create draft PR on request file (brand-free)
+
+# Runs on evidence-branch pushes that touch the request JSON.
+# Integration tokens often cannot create PRs or dispatch workflows; Actions
+# GITHUB_TOKEN with pull-requests:write can. Prefer this over ManagePullRequest.
+on:
+  push:
+    branches:
+      - research/composable-arrows-reduce-map-evidence
+    paths:
+      - "source-submission-prep/.create-draft-pr-request.json"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create draft PR from request JSON
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          chmod +x scripts/check-product-branding.sh
+          REQ=source-submission-prep/.create-draft-pr-request.json
+          test -f "$REQ"
+          title="$(jq -r .title "$REQ")"
+          head="$(jq -r .head "$REQ")"
+          base="$(jq -r .base "$REQ")"
+          body_path="$(jq -r .body_path "$REQ")"
+          draft="$(jq -r '.draft // true' "$REQ")"
+          test -f "$body_path"
+          scripts/check-product-branding.sh --file "$body_path"
+
+          # Idempotent: if an open/draft PR already exists for this head, reuse it.
+          existing="$(gh api "repos/${GITHUB_REPOSITORY}/pulls?head=fraware:${head}&state=open" --jq '.[0].number // empty')"
+          body="$(cat "$body_path")"
+          if [[ -n "$existing" ]]; then
+            echo "PR #${existing} already open for head ${head}; updating body only."
+            jq -n --arg body "$body" '{body:$body}' \
+              | gh api -X PATCH "repos/${GITHUB_REPOSITORY}/pulls/${existing}" --input -
+            number="$existing"
+            url="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${existing}" --jq .html_url)"
+          else
+            jq -n \
+              --arg title "$title" \
+              --arg head "$head" \
+              --arg base "$base" \
+              --arg body "$body" \
+              --argjson draft "$draft" \
+              '{title:$title, head:$head, base:$base, body:$body, draft:$draft}' \
+              > /tmp/create-pr.json
+            gh api -X POST "repos/${GITHUB_REPOSITORY}/pulls" --input /tmp/create-pr.json \
+              > /tmp/create-pr.out.json
+            number="$(jq -r .number /tmp/create-pr.out.json)"
+            url="$(jq -r .html_url /tmp/create-pr.out.json)"
+            echo "Created PR #${number}: ${url}"
+          fi
+
+          gh api "repos/${GITHUB_REPOSITORY}/pulls/${number}" --jq .body \
+            | scripts/check-product-branding.sh --stdin
+          echo "PR_URL=${url}" >> "$GITHUB_STEP_SUMMARY"
