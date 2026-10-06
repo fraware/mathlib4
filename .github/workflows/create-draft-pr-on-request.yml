@@ -27,10 +27,22 @@ jobs:
         run: |
           set -euo pipefail
           chmod +x scripts/check-product-branding.sh
-          if [[ -f rc4-validation-evidence/.create-draft-pr-request.json ]]; then
-            REQ=rc4-validation-evidence/.create-draft-pr-request.json
-          else
-            REQ=source-submission-prep/.create-draft-pr-request.json
+          # Prefer the request path touched by this push when both exist.
+          BEFORE="${{ github.event.before }}"
+          REQ=""
+          if [[ -n "$BEFORE" && "$BEFORE" != "0000000000000000000000000000000000000000" ]]; then
+            if git diff --name-only "$BEFORE" "$GITHUB_SHA" | grep -qx 'rc4-validation-evidence/.create-draft-pr-request.json'; then
+              REQ=rc4-validation-evidence/.create-draft-pr-request.json
+            elif git diff --name-only "$BEFORE" "$GITHUB_SHA" | grep -qx 'source-submission-prep/.create-draft-pr-request.json'; then
+              REQ=source-submission-prep/.create-draft-pr-request.json
+            fi
+          fi
+          if [[ -z "$REQ" ]]; then
+            if [[ -f rc4-validation-evidence/.create-draft-pr-request.json ]]; then
+              REQ=rc4-validation-evidence/.create-draft-pr-request.json
+            else
+              REQ=source-submission-prep/.create-draft-pr-request.json
+            fi
           fi
           test -f "$REQ"
           title="$(jq -r .title "$REQ")"
