@@ -1,6 +1,6 @@
 {
-  "pr_number": "5",
-  "body_path": "rc4-validation-evidence/PR_BODY_SOURCE.md",
-  "title": "ComposableArrows: Fin.reduceFinMk-compatible Precomp.reduceMap (rc4, fraware review)",
-  "sync_note": "sidecar-doc-corrections-pr5"
+  "pr_number": "3",
+  "body_path": "rc4-validation-evidence/PR_BODY_EVIDENCE.md",
+  "title": "ComposableArrows reduceMap validation evidence (rc3 + rc4)",
+  "sync_note": "canonical-evidence-pr-after-pr5-sync"
 }
