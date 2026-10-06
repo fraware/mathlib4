@@ -11,9 +11,11 @@ Completed on 2026-10-06. Upstream submission remains pending Mateo’s explicit 
 - Source/configuration identity `ef3dc5d381ca1010898c59454f38b4a9aeac22e3eddd0f529a1587d07d3e5d51` stable through all stages.
 - 422 MathlibTest source modules enumerated from this checkout; all rebuilt under the full stage.
 
-## Toolchain repair
+## Toolchain note
 
-The prior host failure (`lean --version` → `failed to locate application`; `lake env lean --version` → Lake installation detection failure) came from a broken standalone Linux rc4 tree. On this host, elan installed `leanprover/lean4:v4.35.0-rc4` and both checks succeed:
+Validation succeeded with an **elan-managed** installation of `leanprover/lean4:v4.35.0-rc4` on the engineers’ host. The earlier host failure (`lean --version` → `failed to locate application`; `lake env lean --version` → Lake installation detection failure) remains **unexplained**; its cause was never established.
+
+With the elan-managed toolchain, the following checks succeed:
 
 - `lean --version` → `Lean (version 4.35.0-rc4, x86_64-unknown-linux-gnu, commit c29b6dda4f7c20e3eeaa717c4e565663c5cfa364, Release)`
 - `lake --version` → `Lake version 5.0.0-src+c29b6dd (Lean version 4.35.0-rc4)`

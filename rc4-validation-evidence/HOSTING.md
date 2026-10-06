@@ -5,9 +5,11 @@ Frozen validation evidence archive for the Lean `v4.35.0-rc4` campaign. ZIP byte
 ## Download
 
 - Archive: [`mathlib-rc4-validation-evidence-20261006T200656Z.zip`](./mathlib-rc4-validation-evidence-20261006T200656Z.zip)
-- sha256: `c51d0dc66b96f5de6154f5ae52702bcb2f5eb9f3a7a8b4249873f5cfe63634bf`
+- sha256: `c51d0dc66b96f5de6154f5ae52702bcb2f5eb9f3a7a8b4249873f5cfe63634bf` (ZIP bytes frozen; do not rebuild)
 - Sidecar: [`mathlib-rc4-validation-evidence-20261006T200656Z.zip.sha256`](./mathlib-rc4-validation-evidence-20261006T200656Z.zip.sha256)
-- Member hashes: [`MEMBER_HASHES.txt`](./MEMBER_HASHES.txt)
+- Member hashes (audited, inside ZIP / copy): [`MEMBER_HASHES.txt`](./MEMBER_HASHES.txt) — contains a stale self-hash; left unchanged
+- Member hashes (**corrected sidecar**): [`MEMBER_HASHES.corrected.txt`](./MEMBER_HASHES.corrected.txt) — every archive member with correct hashes; does not list itself. See [`MEMBER_HASHES.NOTE.md`](./MEMBER_HASHES.NOTE.md).
+- Outside-ZIP doc note: branch `READINESS.md` corrects the host-failure wording (elan-managed success; earlier failure unexplained). The ZIP’s internal `READINESS.md` remains audited/unchanged.
 
 Raw URL (evidence branch tip after this commit lands):
 
