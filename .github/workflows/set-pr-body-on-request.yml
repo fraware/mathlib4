@@ -1,0 +1,62 @@
+name: Set PR body on request file (brand-free)
+
+# Runs on evidence-branch pushes that touch the request JSON.
+# Integration tokens often cannot PATCH pulls; Actions GITHUB_TOKEN can.
+# Prefer this over ManagePullRequest.
+on:
+  push:
+    branches:
+      - research/composable-arrows-reduce-map-evidence
+    paths:
+      - "rc4-validation-evidence/.set-pr-body-request.json"
+      - "source-submission-prep/.set-pr-body-request.json"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  set-body:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PATCH PR body from request JSON
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          chmod +x scripts/check-product-branding.sh
+          BEFORE="${{ github.event.before }}"
+          REQ=""
+          if [[ -n "$BEFORE" && "$BEFORE" != "0000000000000000000000000000000000000000" ]]; then
+            if git diff --name-only "$BEFORE" "$GITHUB_SHA" | grep -qx 'rc4-validation-evidence/.set-pr-body-request.json'; then
+              REQ=rc4-validation-evidence/.set-pr-body-request.json
+            elif git diff --name-only "$BEFORE" "$GITHUB_SHA" | grep -qx 'source-submission-prep/.set-pr-body-request.json'; then
+              REQ=source-submission-prep/.set-pr-body-request.json
+            fi
+          fi
+          if [[ -z "$REQ" ]]; then
+            if [[ -f rc4-validation-evidence/.set-pr-body-request.json ]]; then
+              REQ=rc4-validation-evidence/.set-pr-body-request.json
+            else
+              REQ=source-submission-prep/.set-pr-body-request.json
+            fi
+          fi
+          test -f "$REQ"
+          pr_number="$(jq -r .pr_number "$REQ")"
+          body_path="$(jq -r .body_path "$REQ")"
+          title="$(jq -r '.title // empty' "$REQ")"
+          test -f "$body_path"
+          scripts/check-product-branding.sh --file "$body_path"
+          body="$(cat "$body_path")"
+          if [[ -n "$title" ]]; then
+            jq -n --arg body "$body" --arg title "$title" '{body:$body, title:$title}' \
+              | gh api -X PATCH "repos/${GITHUB_REPOSITORY}/pulls/${pr_number}" --input -
+          else
+            jq -n --arg body "$body" '{body:$body}' \
+              | gh api -X PATCH "repos/${GITHUB_REPOSITORY}/pulls/${pr_number}" --input -
+          fi
+          gh api "repos/${GITHUB_REPOSITORY}/pulls/${pr_number}" --jq .body \
+            | scripts/check-product-branding.sh --stdin
+          echo "Updated PR #${pr_number} without product branding."
