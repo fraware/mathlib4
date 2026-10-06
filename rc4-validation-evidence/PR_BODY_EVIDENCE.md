@@ -40,6 +40,8 @@ Evidence-host package for preferred ComposableArrows `Precomp.reduceMap` validat
 
 - rc4 ZIP is frozen at sha256 `c51d0dc66b96f5de6154f5ae52702bcb2f5eb9f3a7a8b4249873f5cfe63634bf` (not rebuilt).
 - Audited rc3 ZIP remains `ce377c085915676c9be3cdf1e1d8b9ac515f437e5b66d2a5c4c49bf93bb6b45c` (not rebuilt).
+- Documentation sidecars (ZIP bytes unchanged): `MEMBER_HASHES.corrected.txt` + `MEMBER_HASHES.NOTE.md` beside the ZIP and on release `rc4-validation-evidence-ef3dc5d3`. The ZIP-internal `MEMBER_HASHES.txt` still has a stale self-hash and is left audited.
+- Branch `READINESS.md` (outside ZIP) records elan-managed success; the earlier host failure remains unexplained. ZIP-internal `READINESS.md` left audited/unchanged.
 - "No remote writes" in packaged validation reports referred to the isolated validation phase (no community Mathlib/CSLib writes). Evidence is published to this evidence-host repository only. Evidence-host CI does not validate the production patch.
 - Independent review accepted the rc3 validation package. Source-review notes: `upstream-candidate-evidence/SOURCE_REVIEW.md`.
 - Submit preferred six-file `production.patch` (sha256 `20c0abcda3f9f62ff463b4bb5ff8060bfdf15b7ddfffc351974a6811b4c54026`), not this evidence-host branch.

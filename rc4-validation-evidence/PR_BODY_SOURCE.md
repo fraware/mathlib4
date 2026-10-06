@@ -55,7 +55,8 @@ On the pinned rc4 candidate (fresh MathlibTest rebuild with cached library depen
 Evidence package:
 
 - Path: `rc4-validation-evidence/` on `research/composable-arrows-reduce-map-evidence`
-- ZIP sha256: `c51d0dc66b96f5de6154f5ae52702bcb2f5eb9f3a7a8b4249873f5cfe63634bf`
+- ZIP sha256: `c51d0dc66b96f5de6154f5ae52702bcb2f5eb9f3a7a8b4249873f5cfe63634bf` (frozen; not rebuilt)
+- Corrected sidecars (outside ZIP): `MEMBER_HASHES.corrected.txt`, `MEMBER_HASHES.NOTE.md`; branch `READINESS.md` notes elan-managed success
 - Download: https://github.com/fraware/mathlib4/raw/research/composable-arrows-reduce-map-evidence/rc4-validation-evidence/mathlib-rc4-validation-evidence-20261006T200656Z.zip
 - Release: https://github.com/fraware/mathlib4/releases/tag/rc4-validation-evidence-ef3dc5d3
 
