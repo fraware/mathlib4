@@ -1,0 +1,7 @@
+{
+  "title": "ComposableArrows: Fin.reduceFinMk-compatible Precomp.reduceMap (rc4, fraware review)",
+  "head": "research/composable-arrows-reduce-map-rc4-source",
+  "base": "research/composable-arrows-reduce-map-base-321b3b85",
+  "body_path": "rc4-validation-evidence/PR_BODY_SOURCE.md",
+  "draft": true
+}

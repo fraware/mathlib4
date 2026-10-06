@@ -1,0 +1,35 @@
+{
+  "stage": "focused",
+  "status": "passed",
+  "commands": [
+    {
+      "argv": [
+        "lake",
+        "build",
+        "Mathlib.CategoryTheory.ComposableArrows.Basic"
+      ],
+      "exit_code": 0,
+      "log": "focused-1791314686606943697/1.log",
+      "sha256": "7cba39c5c873f3ff22fe79e879bedc65a5115569f83fe911a6150f60318a920f"
+    },
+    {
+      "argv": [
+        "lake",
+        "build",
+        "MathlibTest.ComposableArrowsReduceMap",
+        "MathlibTest.ComposableArrowsIntegratedProbe"
+      ],
+      "exit_code": 0,
+      "log": "focused-1791314686606943697/2.log",
+      "sha256": "e33840b6718cb81dd96012c7fcf78b0c153f2bfb384b32680f68c6c127500b63"
+    }
+  ],
+  "started_unix": 1791314686.4810996,
+  "source_sha256": "ef3dc5d381ca1010898c59454f38b4a9aeac22e3eddd0f529a1587d07d3e5d51",
+  "base": "321b3b85cb86b65144d78546020d53650b0d9071",
+  "resource_environment": {
+    "LEAN_NUM_THREADS": "2",
+    "LAKE_NUM_THREADS": "2"
+  },
+  "finished_unix": 1791314727.5559258
+}

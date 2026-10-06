@@ -1,0 +1,64 @@
+{
+  "stage": "full",
+  "status": "passed",
+  "commands": [
+    {
+      "argv": [
+        "lake",
+        "exe",
+        "mk_all",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": "full-1791315205423550827/1.log",
+      "sha256": "d86e4db22aca4be28b2ee51b0d811b071ed55a4aac2a187a3958650dcc72a0bd"
+    },
+    {
+      "argv": [
+        "lake",
+        "build",
+        "Mathlib",
+        "Archive",
+        "Counterexamples",
+        "Wanted"
+      ],
+      "exit_code": 0,
+      "log": "full-1791315205423550827/2.log",
+      "sha256": "6100960f73fc1a703c6bf9b95e9ae5849117a52fd21bf395f0febe1ca3286329"
+    },
+    {
+      "argv": [
+        "lake",
+        "--iofail",
+        "test"
+      ],
+      "exit_code": 0,
+      "log": "full-1791315205423550827/3.log",
+      "sha256": "b8b0e30e4fe8508576d6d6575028af1c55c19ca996071f94a3b0bcb36fa0f921",
+      "test_coverage": {
+        "expected": 422,
+        "built_expected": 422,
+        "missing": []
+      }
+    },
+    {
+      "argv": [
+        "lake",
+        "lint",
+        "--",
+        "--trace"
+      ],
+      "exit_code": 0,
+      "log": "full-1791315205423550827/4.log",
+      "sha256": "067f4bc4bb1d8632f3428cc6399a4bdd205508a155cdce4115b8465ddc28e187"
+    }
+  ],
+  "started_unix": 1791315205.2826025,
+  "source_sha256": "ef3dc5d381ca1010898c59454f38b4a9aeac22e3eddd0f529a1587d07d3e5d51",
+  "base": "321b3b85cb86b65144d78546020d53650b0d9071",
+  "resource_environment": {
+    "LEAN_NUM_THREADS": "2",
+    "LAKE_NUM_THREADS": "2"
+  },
+  "finished_unix": 1791317094.3713448
+}

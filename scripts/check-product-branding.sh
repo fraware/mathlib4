@@ -105,6 +105,7 @@ case "$mode" in
         'composable-arrows-handoff/**' \
         'upstream-candidate-evidence/**' \
         'source-submission-prep/**' \
+        'rc4-validation-evidence/**' \
         2>/dev/null || true
     )
     # Guardrail / policy docs name banned strings on purpose; exclude them.

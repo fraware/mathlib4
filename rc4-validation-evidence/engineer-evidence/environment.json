@@ -1,0 +1,45 @@
+{
+  "stage": "environment",
+  "status": "passed",
+  "commands": [
+    {
+      "argv": [
+        "lake",
+        "--version"
+      ],
+      "exit_code": 0,
+      "log": "environment-1791314614064166440/1.log",
+      "sha256": "85c4a74d99df1f2b94e3de89999f0133ea6f72cf4b24a5475869cc1ff26278cc"
+    },
+    {
+      "argv": [
+        "lake",
+        "env",
+        "lean",
+        "--version"
+      ],
+      "exit_code": 0,
+      "log": "environment-1791314614064166440/2.log",
+      "sha256": "28590c80ae95c2d0d1133fc2276904c1b024a3db89fa985ea0e96a5ab9408eac"
+    },
+    {
+      "argv": [
+        "lake",
+        "exe",
+        "cache",
+        "get"
+      ],
+      "exit_code": 0,
+      "log": "environment-1791314614064166440/3.log",
+      "sha256": "b336db69909a043e583d9f75a720bc63c46d675caa858053a3d4f3673c068ce0"
+    }
+  ],
+  "started_unix": 1791314613.9431202,
+  "source_sha256": "ef3dc5d381ca1010898c59454f38b4a9aeac22e3eddd0f529a1587d07d3e5d51",
+  "base": "321b3b85cb86b65144d78546020d53650b0d9071",
+  "resource_environment": {
+    "LEAN_NUM_THREADS": "2",
+    "LAKE_NUM_THREADS": "2"
+  },
+  "finished_unix": 1791314651.8515918
+}

@@ -9,6 +9,7 @@ on:
       - research/composable-arrows-reduce-map-evidence
     paths:
       - "source-submission-prep/.create-draft-pr-request.json"
+      - "rc4-validation-evidence/.create-draft-pr-request.json"
 
 permissions:
   contents: read
@@ -26,7 +27,11 @@ jobs:
         run: |
           set -euo pipefail
           chmod +x scripts/check-product-branding.sh
-          REQ=source-submission-prep/.create-draft-pr-request.json
+          if [[ -f rc4-validation-evidence/.create-draft-pr-request.json ]]; then
+            REQ=rc4-validation-evidence/.create-draft-pr-request.json
+          else
+            REQ=source-submission-prep/.create-draft-pr-request.json
+          fi
           test -f "$REQ"
           title="$(jq -r .title "$REQ")"
           head="$(jq -r .head "$REQ")"

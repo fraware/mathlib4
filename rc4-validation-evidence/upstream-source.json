@@ -1,0 +1,19 @@
+{
+  "base": "321b3b85cb86b65144d78546020d53650b0d9071",
+  "patch_sha256": "20c0abcda3f9f62ff463b4bb5ff8060bfdf15b7ddfffc351974a6811b4c54026",
+  "files": {
+    "Mathlib/Algebra/Homology/ExactSequence.lean": "3ee751c85a4a6ea926cb0e40f2c4f5ba1d178b575495804ab25782e32b1be6c5",
+    "Mathlib/Algebra/Homology/HomologySequence.lean": "43f6fd6f84fb1d61467addbad7dfc8f873534deb618901b61543dc722bb68e04",
+    "Mathlib/Algebra/Homology/HomotopyCategory/ShortExact.lean": "3dff79b51cb39c2f548b7035b4d2bc17fdff61d323f3506613d1cad99834d17e",
+    "Mathlib/CategoryTheory/ComposableArrows/Basic.lean": "28b135aa722aa1e27899e94b191ac23c2e00802f61859ba1d392f64404797251",
+    "MathlibTest/ComposableArrowsIntegratedProbe.lean": "b7e4de02fd8e1a433fecbe94d4840dc50a0af614898edd99da002fa42a60101e",
+    "MathlibTest/ComposableArrowsReduceMap.lean": "3a3f1966332c9a2f2c7b5c378f074701646a0c480342f6a50c75fc77c23b4ecb"
+  },
+  "toolchain": "leanprover/lean4:v4.35.0-rc4",
+  "status": "validated on rc4; publication pending approval",
+  "build_config_sha256": {
+    "lakefile.lean": "7a0f61511e9ae54f26f812589428a53b36d5d2ddf03265f903de78b21bcb13f2",
+    "lake-manifest.json": "0d0cfc1d01f64c34bbd40e858428b83ede48be9f6e065339d63ebb851bd49a57",
+    "lean-toolchain": "8f89aa44fccdb1a0b6cc768c7c9f54b94cd40e47a08d582f82d1235f13075cf7"
+  }
+}

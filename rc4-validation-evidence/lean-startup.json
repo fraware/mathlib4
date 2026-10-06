@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "lean",
+    "--version"
+  ],
+  "exit_code": 0,
+  "log": "lean-startup.log",
+  "sha256": "b59019843b995b9fe04238187211393a7a029faf8c84faba27ded2ce17e370a4",
+  "text": "Lean (version 4.35.0-rc4, x86_64-unknown-linux-gnu, commit c29b6dda4f7c20e3eeaa717c4e565663c5cfa364, Release)"
+}
