@@ -1,0 +1,27 @@
+#!/bin/bash
+# Optional local pre-commit: scan staged evidence-host paths for product branding.
+set -euo pipefail
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+CHECK="$ROOT/scripts/check-product-branding.sh"
+[[ -x "$CHECK" ]] || exit 0
+
+is_policy_doc() {
+  case "$1" in
+    .cursor/rules/*|AGENTS.md|composable-arrows-handoff/AGENTS.md|composable-arrows-handoff/BRANDING_HANDOFF.md|scripts/check-product-branding.sh|scripts/set-pr-body.sh|scripts/git-hooks/*|.github/workflows/product-branding-guard.yml|.github/workflows/set-pr-body.yml)
+      return 0 ;;
+  esac
+  return 1
+}
+
+while IFS= read -r -d '' f; do
+  case "$f" in
+    AGENTS.md|.cursor/*|scripts/*|.github/workflows/product-branding-guard.yml|.github/workflows/set-pr-body.yml|composable-arrows-handoff/*|upstream-candidate-evidence/*|source-submission-prep/*)
+      if is_policy_doc "$f"; then continue; fi
+      if git show ":$f" 2>/dev/null | "$CHECK" --stdin; then :; else
+        echo "Staged file fails product-branding check: $f" >&2
+        exit 1
+      fi
+      ;;
+  esac
+done < <(git diff --cached --name-only -z --diff-filter=d)
+exit 0
