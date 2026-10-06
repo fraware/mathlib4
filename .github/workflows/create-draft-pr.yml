@@ -1,0 +1,93 @@
+name: Create draft PR (brand-free)
+
+# Opens a draft PR via Actions GITHUB_TOKEN (pull-requests: write).
+# Use this instead of ManagePullRequest, which injects product footers.
+# Integration tokens used by local `gh pr create` often lack pull-requests:write.
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: Pull request title
+        required: true
+        type: string
+      head:
+        description: Head branch
+        required: true
+        type: string
+      base:
+        description: Base branch
+        required: true
+        type: string
+      body_path:
+        description: Path to markdown body file
+        required: true
+        type: string
+      body_ref:
+        description: Git ref that contains body_path (e.g. evidence branch)
+        required: true
+        type: string
+      draft:
+        description: Create as draft
+        required: false
+        default: "true"
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout body source ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.body_ref }}
+
+      - name: Create draft PR with brand-free body
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE: ${{ inputs.title }}
+          HEAD: ${{ inputs.head }}
+          BASE: ${{ inputs.base }}
+          BODY_PATH: ${{ inputs.body_path }}
+          DRAFT: ${{ inputs.draft }}
+        run: |
+          set -euo pipefail
+          chmod +x scripts/check-product-branding.sh
+          test -f "$BODY_PATH"
+          scripts/check-product-branding.sh --file "$BODY_PATH"
+
+          draft_args=()
+          if [[ "${DRAFT}" == "true" ]]; then
+            draft_args+=(--draft)
+          fi
+
+          # Prefer REST so we can set body atomically without product footers.
+          body="$(cat "$BODY_PATH")"
+          jq -n \
+            --arg title "$TITLE" \
+            --arg head "$HEAD" \
+            --arg base "$BASE" \
+            --arg body "$body" \
+            --argjson draft "$([[ "$DRAFT" == "true" ]] && echo true || echo false)" \
+            '{title:$title, head:$head, base:$base, body:$body, draft:$draft}' \
+            > /tmp/create-pr.json
+
+          if ! gh api -X POST "repos/${GITHUB_REPOSITORY}/pulls" --input /tmp/create-pr.json \
+            > /tmp/create-pr.out.json; then
+            echo "Create failed; full response:" >&2
+            cat /tmp/create-pr.out.json >&2 || true
+            exit 1
+          fi
+
+          number="$(jq -r .number /tmp/create-pr.out.json)"
+          url="$(jq -r .html_url /tmp/create-pr.out.json)"
+          echo "Created PR #${number}: ${url}"
+
+          gh api "repos/${GITHUB_REPOSITORY}/pulls/${number}" --jq .body \
+            | scripts/check-product-branding.sh --stdin
+
+          echo "PR_NUMBER=${number}" >> "$GITHUB_OUTPUT"
+          echo "PR_URL=${url}" >> "$GITHUB_STEP_SUMMARY"

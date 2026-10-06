@@ -18,7 +18,10 @@ Frozen archive (do not rebuild):
 - Directory: https://github.com/fraware/mathlib4/tree/research/composable-arrows-reduce-map-evidence/source-submission-prep
 - Hosting note: https://github.com/fraware/mathlib4/blob/research/composable-arrows-reduce-map-evidence/source-submission-prep/HOSTING.md
 
-If a GitHub Release asset `source-submission-prep-47e94148` is published on this repository, that asset is the same ZIP bytes.
+GitHub Release asset (same ZIP bytes):
+
+- https://github.com/fraware/mathlib4/releases/tag/source-submission-prep-47e94148
+- https://github.com/fraware/mathlib4/releases/download/source-submission-prep-47e94148/source-submission-prep.zip
 
 ## Real base pin
 

@@ -39,3 +39,11 @@ Expiry/revocation of the previously exposed token remains **owner action pending
 ## Scope
 
 This evidence-host path and any fraware draft PR that links here are for **fraware review only**. Community / upstream mathlib4 submission still requires Mateo’s explicit later approval. No community remote write is authorized by this note.
+
+## GitHub Release asset
+
+Same frozen ZIP bytes are also attached to prerelease tag `source-submission-prep-47e94148` (target commit `47e94148…`):
+
+- https://github.com/fraware/mathlib4/releases/tag/source-submission-prep-47e94148
+- Asset: https://github.com/fraware/mathlib4/releases/download/source-submission-prep-47e94148/source-submission-prep.zip
+
